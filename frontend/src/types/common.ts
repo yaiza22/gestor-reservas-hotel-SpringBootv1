@@ -1,3 +1,6 @@
+/** Tipos de documento de identidad (MODELO-DE-DATOS.md §3). */
+export type TipoDocIdentidad = 'PA' | 'CC' | 'CE' | 'PEP' | 'RC' | 'TI'
+
 /** Una línea de error de campo, tal como la envía el backend (API.md §2.3). */
 export interface ErrorCampo {
   campo: string
