@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { Chip } from '@mui/material'
 import type { ChipProps } from '@mui/material'
 import type { EstadoHabitacion } from '../types/habitacion'
@@ -31,10 +32,14 @@ const APARIENCIA: Record<ValorEstado, Apariencia> = {
 
 interface EstadoChipProps {
   valor: ValorEstado
+  /** Si se pasa, la etiqueta se vuelve un botón (por ejemplo, para cambiar el estado). */
+  onClick?: (evento: MouseEvent<HTMLElement>) => void
+  /** Texto para lectores de pantalla; solo se usa cuando la etiqueta es un botón. */
+  ariaLabel?: string
 }
 
 /** Etiqueta de color para cualquier estado o rol. */
-export function EstadoChip({ valor }: EstadoChipProps) {
+export function EstadoChip({ valor, onClick, ariaLabel }: EstadoChipProps) {
   const { texto, color } = APARIENCIA[valor]
-  return <Chip label={texto} color={color} size="small" />
+  return <Chip label={texto} color={color} size="small" onClick={onClick} aria-label={onClick ? ariaLabel : undefined} />
 }

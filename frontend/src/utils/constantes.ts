@@ -1,4 +1,5 @@
 import type { TipoDocIdentidad } from '../types/common'
+import type { EstadoHabitacion, TipoHabitacion } from '../types/habitacion'
 import type { Rol } from '../types/usuario'
 
 /** Texto del menú superior y su ruta (ARQUITECTURA.md §3.3). */
@@ -29,3 +30,15 @@ export const ROLES: { valor: Rol; etiqueta: string }[] = [
   { valor: 'ADMINISTRADOR', etiqueta: 'Administrador' },
   { valor: 'ASISTENTE', etiqueta: 'Asistente' },
 ]
+
+/** Opciones de la lista «Tipo de habitación» (MODELO-DE-DATOS.md §3). */
+export const TIPOS_HABITACION: { valor: TipoHabitacion; etiqueta: string }[] = [
+  { valor: 'INDIVIDUAL', etiqueta: 'Individual' },
+  { valor: 'DOBLE', etiqueta: 'Doble' },
+  { valor: 'TWIN', etiqueta: 'Twin' },
+  { valor: 'TRIPLE', etiqueta: 'Triple' },
+  { valor: 'FAMILIAR', etiqueta: 'Familiar' },
+]
+
+/** Estados de una habitación, en el orden en que se muestran en listas y filtros. */
+export const ESTADOS_HABITACION: EstadoHabitacion[] = ['DISPONIBLE', 'OCUPADA', 'MANTENIMIENTO', 'LIMPIEZA']
