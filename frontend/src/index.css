@@ -1,0 +1,7 @@
+/* Solo un reinicio mínimo: los colores y la tipografía salen de theme.ts */
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
