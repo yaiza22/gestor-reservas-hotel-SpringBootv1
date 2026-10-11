@@ -1,4 +1,5 @@
 import type { TipoDocIdentidad } from '../types/common'
+import type { Rol } from '../types/usuario'
 
 /** Texto del menú superior y su ruta (ARQUITECTURA.md §3.3). */
 export const SECCIONES = [
@@ -21,4 +22,10 @@ export const TIPOS_DOCUMENTO: { valor: TipoDocIdentidad; etiqueta: string }[] = 
   { valor: 'PEP', etiqueta: 'Permiso especial de permanencia' },
   { valor: 'RC', etiqueta: 'Registro civil' },
   { valor: 'TI', etiqueta: 'Tarjeta de identidad' },
+]
+
+/** Opciones de la lista «Rol» (MODELO-DE-DATOS.md §3). */
+export const ROLES: { valor: Rol; etiqueta: string }[] = [
+  { valor: 'ADMINISTRADOR', etiqueta: 'Administrador' },
+  { valor: 'ASISTENTE', etiqueta: 'Asistente' },
 ]
