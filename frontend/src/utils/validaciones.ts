@@ -1,4 +1,5 @@
 import type { TipoDocIdentidad } from '../types/common'
+import type { EstadoHabitacion, TipoHabitacion } from '../types/habitacion'
 import type { Rol } from '../types/usuario'
 
 /** Errores por campo: la clave es el nombre del campo y el valor, el mensaje. */
@@ -106,5 +107,51 @@ export function validarUsuario(v: UsuarioForm, esEdicion: boolean): ErroresForm 
   validarContacto(v, errores)
   if (!esEdicion) validarPassword(v, errores)
   if (v.rol === '') errores.rol = 'Debe seleccionar un rol.'
+  return errores
+}
+
+/** Valores del formulario de habitación; los números se guardan como texto hasta validarlos. */
+export interface HabitacionForm {
+  numero: string
+  tipoHabitacion: TipoHabitacion | ''
+  piso: string
+  precioBase: string
+  capacidad: string
+  estado: EstadoHabitacion
+}
+
+const REGEX_ENTERO = /^-?\d+$/
+const REGEX_DECIMAL = /^-?\d+(\.\d+)?$/
+
+/** Validaciones de MODELO-DE-DATOS.md §5.2. Al editar no se revisa el número. */
+export function validarHabitacion(v: HabitacionForm, esEdicion: boolean): ErroresForm {
+  const errores: ErroresForm = {}
+  if (!esEdicion) {
+    agregar(
+      errores,
+      'numero',
+      textoObligatorio(
+        v.numero,
+        'El número de la habitación es obligatorio.',
+        10,
+        'El número no puede superar 10 caracteres.',
+      ),
+    )
+  }
+  if (v.tipoHabitacion === '') errores.tipoHabitacion = 'Debe seleccionar un tipo de habitación.'
+
+  const piso = v.piso.trim()
+  if (!REGEX_ENTERO.test(piso)) errores.piso = 'El piso debe ser un número entero.'
+  else if (Number(piso) < 0) errores.piso = 'El piso no puede ser negativo.'
+
+  const precio = v.precioBase.trim()
+  if (!REGEX_DECIMAL.test(precio)) errores.precioBase = 'El precio base debe ser un número.'
+  else if (Number(precio) <= 0) errores.precioBase = 'El precio base debe ser mayor que 0.'
+  else if ((precio.split('.')[1] ?? '').length > 2) errores.precioBase = 'El precio base admite máximo 2 decimales.'
+
+  const capacidad = v.capacidad.trim()
+  if (!REGEX_ENTERO.test(capacidad)) errores.capacidad = 'La capacidad debe ser un número entero.'
+  else if (Number(capacidad) < 1 || Number(capacidad) > 10) errores.capacidad = 'La capacidad debe estar entre 1 y 10.'
+
   return errores
 }
