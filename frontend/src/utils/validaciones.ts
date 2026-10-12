@@ -1,5 +1,6 @@
 import type { TipoDocIdentidad } from '../types/common'
 import type { EstadoHabitacion, TipoHabitacion } from '../types/habitacion'
+import type { Temporada } from '../types/reserva'
 import type { Rol } from '../types/usuario'
 
 /** Errores por campo: la clave es el nombre del campo y el valor, el mensaje. */
@@ -153,5 +154,39 @@ export function validarHabitacion(v: HabitacionForm, esEdicion: boolean): Errore
   if (!REGEX_ENTERO.test(capacidad)) errores.capacidad = 'La capacidad debe ser un número entero.'
   else if (Number(capacidad) < 1 || Number(capacidad) > 10) errores.capacidad = 'La capacidad debe estar entre 1 y 10.'
 
+  return errores
+}
+
+/** Valores del formulario de reserva; el cliente y la temporada empiezan vacíos hasta que el usuario elige. */
+export interface ReservaForm {
+  clienteId: number | ''
+  habitacionesId: number[]
+  /** Formato yyyy-MM-dd, el mismo que entrega el selector de fecha. */
+  fechaInicio: string
+  fechaFin: string
+  cantHuespedes: string
+  temporada: Temporada | ''
+}
+
+/** Validaciones de MODELO-DE-DATOS.md §6.2. Las que consultan otros datos (cruce de fechas, capacidad…) las hace el servidor. */
+export function validarReserva(v: ReservaForm): ErroresForm {
+  const errores: ErroresForm = {}
+  if (v.clienteId === '') errores.clienteId = 'El cliente es obligatorio.'
+  if (v.habitacionesId.length === 0) {
+    errores.habitacionesId = 'Debes agregar al menos una habitación a la lista.'
+  } else if (v.habitacionesId.length > 10) {
+    errores.habitacionesId = 'Las habitaciones no pueden repetirse (máximo 10).'
+  }
+  if (v.fechaInicio === '') errores.fechaInicio = 'La fecha de inicio es obligatoria.'
+  if (v.fechaFin === '') {
+    errores.fechaFin = 'La fecha de fin es obligatoria.'
+  } else if (v.fechaInicio !== '' && v.fechaFin <= v.fechaInicio) {
+    // Las fechas yyyy-MM-dd se pueden comparar como texto
+    errores.fechaFin = 'La fecha de fin debe ser posterior a la fecha de inicio.'
+  }
+  const huespedes = v.cantHuespedes.trim()
+  if (!REGEX_ENTERO.test(huespedes)) errores.cantHuespedes = 'La cantidad de huéspedes debe ser un número entero.'
+  else if (Number(huespedes) < 1) errores.cantHuespedes = 'La cantidad de huéspedes debe ser al menos 1.'
+  if (v.temporada === '') errores.temporada = 'Debe seleccionar una temporada.'
   return errores
 }

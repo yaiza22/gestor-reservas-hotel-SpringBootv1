@@ -1,5 +1,6 @@
 import type { TipoDocIdentidad } from '../types/common'
 import type { EstadoHabitacion, TipoHabitacion } from '../types/habitacion'
+import type { EstadoReserva, Temporada } from '../types/reserva'
 import type { Rol } from '../types/usuario'
 
 /** Texto del menú superior y su ruta (ARQUITECTURA.md §3.3). */
@@ -42,3 +43,12 @@ export const TIPOS_HABITACION: { valor: TipoHabitacion; etiqueta: string }[] = [
 
 /** Estados de una habitación, en el orden en que se muestran en listas y filtros. */
 export const ESTADOS_HABITACION: EstadoHabitacion[] = ['DISPONIBLE', 'OCUPADA', 'MANTENIMIENTO', 'LIMPIEZA']
+
+/** Opciones de la lista «Temporada» (MODELO-DE-DATOS.md §3). */
+export const TEMPORADAS: { valor: Temporada; etiqueta: string }[] = [
+  { valor: 'BAJA', etiqueta: 'Baja' },
+  { valor: 'ALTA', etiqueta: 'Alta' },
+]
+
+/** Estados de una reserva, en el orden en que se muestran en el filtro. */
+export const ESTADOS_RESERVA: EstadoReserva[] = ['PENDIENTE', 'CONFIRMADA', 'ENCURSO', 'FINALIZADA', 'CANCELADA']
