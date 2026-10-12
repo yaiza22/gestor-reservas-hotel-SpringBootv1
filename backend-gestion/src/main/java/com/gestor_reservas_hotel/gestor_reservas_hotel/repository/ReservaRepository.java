@@ -10,6 +10,6 @@ public interface ReservaRepository {
     Reserva save(Reserva reserva);
     Optional<Reserva> findById(Long id);
     List<Reserva> findAll();
-    boolean existsCruceDeFechas(Long habitacionId, LocalDate fechaInicio, LocalDate fechaFin);
+    boolean existsCruceDeFechas(Long habitacionId, LocalDate fechaInicio, LocalDate fechaFin, Long reservaIdExcluida);
     void deleteById(Long id);
 }

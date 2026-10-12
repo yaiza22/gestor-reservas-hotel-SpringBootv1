@@ -92,14 +92,33 @@ public class ReservaService {
         }
     }
 
-    private void validarSinCruceDeFechas(ReservaRequest request) {
+    private void validarSinCruceDeFechas(ReservaRequest request, Long reservaIdExcluida) {
         for (Long habitacionId : request.habitacionesId()) {
-            if (repository.existsCruceDeFechas(habitacionId, request.fechaInicio(), request.fechaFin())) {
+            if (repository.existsCruceDeFechas(habitacionId, request.fechaInicio(), request.fechaFin(), reservaIdExcluida)) {
                 throw new ConflictoNegocioException("La habitación no está disponible en esas fechas.");
             }
         }
     }
 
+    private BigDecimal validarYObtenerPrecioPorNoche(ReservaRequest request, Long reservaIdExcluida) {
+        validarFechas(request);
+        validarHabitacionesSinRepetir(request.habitacionesId());
+        validarClienteExiste(request.clienteId());
+        ConsultaHabitaciones consulta = consultarHabitaciones(request);
+        validarCapacidad(consulta.habitaciones(), request.cantHuespedes());
+        validarSinCruceDeFechas(request, reservaIdExcluida);
+        return consulta.precioPorNoche();
+    }
+
+    private void copiarDatos(Reserva reserva, ReservaRequest request, BigDecimal precioPorNoche) {
+        reserva.setClienteId(request.clienteId());
+        reserva.setHabitacionesId(List.copyOf(request.habitacionesId()));
+        reserva.setFechaInicio(request.fechaInicio());
+        reserva.setFechaFin(request.fechaFin());
+        reserva.setCantHuespedes(request.cantHuespedes());
+        reserva.setTemporada(request.temporada());
+        reserva.setPrecioTotal(precioPorNoche.multiply(BigDecimal.valueOf(reserva.calcularNoches())).setScale(ESCALA_DINERO, RoundingMode.HALF_UP));
+    }
     /**
      * Crea una reserva en estado PENDIENTE y calcula su precio total.
      * @throws ValidacionException si la fecha de fin no es posterior a la de inicio o hay habitaciones repetidas
@@ -108,28 +127,32 @@ public class ReservaService {
      * @throws ServicioNoDisponibleException si el microservicio de habitaciones no responde
      */
     public Reserva crear(ReservaRequest request) {
-        validarFechas(request);
-        validarHabitacionesSinRepetir(request.habitacionesId());
-        validarClienteExiste(request.clienteId());
-        ConsultaHabitaciones consulta = consultarHabitaciones(request);
-        validarCapacidad(consulta.habitaciones(), request.cantHuespedes());
-        validarSinCruceDeFechas(request);
-
+        BigDecimal precioPorNoche = validarYObtenerPrecioPorNoche(request, null);
         Reserva reserva = new Reserva();
-        reserva.setClienteId(request.clienteId());
-        reserva.setHabitacionesId(List.copyOf(request.habitacionesId()));
-        reserva.setFechaInicio(request.fechaInicio());
-        reserva.setFechaFin(request.fechaFin());
-        reserva.setCantHuespedes(request.cantHuespedes());
-        reserva.setTemporada(request.temporada());
         reserva.setEstado(EstadoReserva.PENDIENTE);
-
-        reserva.setPrecioTotal(consulta.precioPorNoche()
-                .multiply(BigDecimal.valueOf(reserva.calcularNoches()))
-                .setScale(ESCALA_DINERO, RoundingMode.HALF_UP));
+        copiarDatos(reserva, request, precioPorNoche);
         Reserva guardada = repository.save(reserva);
-        log.info("Reserva creada id={} clienteId={} total={}", guardada.getId(), guardada.getClienteId(),
-                guardada.getPrecioTotal());
+        log.info("Reserva creada id={} clienteId={} total={}", guardada.getId(), guardada.getClienteId(), guardada.getPrecioTotal());
+        return guardada;
+    }
+
+    /**
+     * Solo se puede editar en estado PENDIENTE o CONFIRMADA y recalcula el precio
+     * @throws RecursoNoEncontradoException si no existe la reserva
+     * @throws ConflictoNegocioException si la reserva no se puede editar en su estado actual, o por las mismas reglas de crear (mantenimiento, capacidad, fechas cruzadas)
+     * @throws ValidacionException si las fechas son inválidas o hay habitaciones repetidas
+     * @throws ReferenciaInvalidaException si el cliente o alguna habitación no existen
+     * @throws ServicioNoDisponibleException si el microservicio de habitaciones no responde
+     */
+    public Reserva actualizar(Long id, ReservaRequest request) {
+        Reserva reserva = obtenerPorId(id);
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE && reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new ConflictoNegocioException("Solo se puede editar una reserva pendiente o confirmada " + "(estado actual: " + reserva.getEstado() + ").");
+        }
+        BigDecimal precioPorNoche = validarYObtenerPrecioPorNoche(request, id);
+        copiarDatos(reserva, request, precioPorNoche);
+        Reserva guardada = repository.save(reserva);
+        log.info("Reserva actualizada id={} total={}", id, guardada.getPrecioTotal());
         return guardada;
     }
 

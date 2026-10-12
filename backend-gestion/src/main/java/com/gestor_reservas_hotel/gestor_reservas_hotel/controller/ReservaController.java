@@ -37,6 +37,11 @@ public class ReservaController {
         return ResponseEntity.created(ubicacion).body(ReservaResponse.desde(creada));
     }
 
+    @PutMapping("/{id}")
+    public ReservaResponse actualizar(@PathVariable Long id, @Valid @RequestBody ReservaRequest request) {
+        return ReservaResponse.desde(service.actualizar(id, request));
+    }
+
     @PostMapping("/{id}/confirmar")
     public ReservaResponse confirmar(@PathVariable Long id) {
         return ReservaResponse.desde(service.confirmar(id));

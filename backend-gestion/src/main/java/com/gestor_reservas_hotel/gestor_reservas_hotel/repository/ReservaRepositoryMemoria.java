@@ -37,9 +37,11 @@ public class ReservaRepositoryMemoria implements ReservaRepository {
                 .toList();
     }
 
+    // Al editar la reserva, esta se excluye a sí misma. El día de salida queda libre sin importar la hora.
     @Override
-    public boolean existsCruceDeFechas(Long habitacionId, LocalDate inicioNueva, LocalDate finNueva) {
+    public boolean existsCruceDeFechas(Long habitacionId, LocalDate inicioNueva, LocalDate finNueva, Long reservaIdExcluida) {
         return almacen.values().stream()
+                .filter(r -> !r.getId().equals(reservaIdExcluida))
                 .filter(r -> !ESTADOS_QUE_NO_OCUPAN.contains(r.getEstado()))
                 .filter(r -> r.getHabitacionesId().contains(habitacionId))
                 .anyMatch(r -> inicioNueva.isBefore(r.getFechaFin()) && r.getFechaInicio().isBefore(finNueva));
