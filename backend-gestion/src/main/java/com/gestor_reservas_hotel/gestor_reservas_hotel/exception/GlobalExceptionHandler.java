@@ -63,6 +63,14 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.BAD_REQUEST, "Referencia inexistente", e.getMessage(), "REFERENCIA_INEXISTENTE", errores);
     }
 
+    @ExceptionHandler(ValidacionException.class)
+    public ResponseEntity<ProblemDetail> manejarValidacionDeCampo(ValidacionException ex) {
+        log.warn("Validación fallida en el campo {}: {}", ex.getCampo(), ex.getMessage());
+        List<ErrorCampo> errores = List.of(new ErrorCampo(ex.getCampo(), ex.getMessage()));
+        return construir(HttpStatus.BAD_REQUEST, "Solicitud inválida", "Hay campos con errores",
+                CODIGO_VALIDACION, errores);
+    }
+
     @ExceptionHandler(ServicioNoDisponibleException.class)
     public ResponseEntity<ProblemDetail> manejarServicioNoDisponible(ServicioNoDisponibleException e) {
         log.warn("Servicio no disponible: {}", e.getMessage());
