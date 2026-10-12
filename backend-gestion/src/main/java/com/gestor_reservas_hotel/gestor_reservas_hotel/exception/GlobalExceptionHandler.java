@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -104,6 +106,19 @@ public class GlobalExceptionHandler {
         log.warn("Falta el parámetro {}", e.getParameterName());
         String detalle = "El parámetro '" + e.getParameterName() + "' es obligatorio.";
         return construir(HttpStatus.BAD_REQUEST, "Solicitud inválida", detalle, CODIGO_VALIDACION, List.of(new ErrorCampo(e.getParameterName(), detalle)));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> manejarMetodoNoPermitido(HttpRequestMethodNotSupportedException ex) {
+        log.warn("Método HTTP no permitido: {}", ex.getMethod());
+        String detalle = "El método " + ex.getMethod() + " no está permitido para esta ruta.";
+        return construir(HttpStatus.METHOD_NOT_ALLOWED, "Método no permitido", detalle, "METODO_NO_PERMITIDO", null);
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> manejarTipoNoSoportado(HttpMediaTypeNotSupportedException ex) {
+        log.warn("Tipo de contenido no soportado: {}", ex.getContentType());
+        return construir(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de contenido no soportado", "El cuerpo de la solicitud debe enviarse como JSON (Content-Type: application/json).", "TIPO_NO_SOPORTADO", null);
     }
 
     @ExceptionHandler(Exception.class)
