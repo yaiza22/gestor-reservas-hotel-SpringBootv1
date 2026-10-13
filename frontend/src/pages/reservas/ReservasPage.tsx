@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import {
   Box,
   Button,
-  CircularProgress,
   IconButton,
   MenuItem,
   Paper,
@@ -17,6 +16,7 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { listarClientes } from '../../api/clientes.api'
 import { listarHabitaciones } from '../../api/habitaciones.api'
 import {
@@ -28,6 +28,7 @@ import {
   registrarCheckOut,
 } from '../../api/reservas.api'
 import { AlertaError } from '../../components/AlertaError'
+import { CargandoTabla } from '../../components/CargandoTabla'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { EmptyState } from '../../components/EmptyState'
 import { EstadoChip } from '../../components/EstadoChip'
@@ -39,6 +40,7 @@ import type { EstadoReserva, Reserva } from '../../types/reserva'
 import { ESTADOS_RESERVA } from '../../utils/constantes'
 import { comoApiError, mensajeDeError } from '../../utils/errores'
 import { formatearFecha, formatearMoneda } from '../../utils/formato'
+import { ReservaDetalleDialog } from './ReservaDetalleDialog'
 import { ReservaFormDialog } from './ReservaFormDialog'
 
 /** Botón de transición de estado: qué hace, desde qué estados se puede y cómo avisar que salió bien. */
@@ -59,10 +61,11 @@ const TRANSICIONES: Transicion[] = [
 export function ReservasPage() {
   const notify = useNotify()
   const { datos: reservas, cargando, error, recargar } = useLista(listarReservas)
-  const { datos: clientes, error: errorClientes } = useLista(listarClientes)
-  const { datos: habitaciones, error: errorHabitaciones } = useLista(listarHabitaciones)
+  const { datos: clientes, cargando: cargandoClientes, error: errorClientes } = useLista(listarClientes)
+  const { datos: habitaciones, cargando: cargandoHabitaciones, error: errorHabitaciones } = useLista(listarHabitaciones)
   const [filtroEstado, setFiltroEstado] = useState<EstadoReserva | ''>('')
   const [formAbierto, setFormAbierto] = useState(false)
+  const [verDetalle, setVerDetalle] = useState<Reserva | null>(null)
   const [porCancelar, setPorCancelar] = useState<Reserva | null>(null)
   const [porEliminar, setPorEliminar] = useState<Reserva | null>(null)
   // Reserva con una acción en marcha: se deshabilitan sus botones para no enviarla dos veces
@@ -106,16 +109,14 @@ export function ReservasPage() {
 
   async function confirmarCancelar() {
     if (!porCancelar) return
-    const reserva = porCancelar
+    await ejecutar(porCancelar, () => cancelarReserva(porCancelar.id), 'Reserva cancelada')
     setPorCancelar(null)
-    await ejecutar(reserva, () => cancelarReserva(reserva.id), 'Reserva cancelada')
   }
 
   async function confirmarEliminar() {
     if (!porEliminar) return
-    const reserva = porEliminar
+    await ejecutar(porEliminar, () => eliminarReserva(porEliminar.id), 'Reserva eliminada')
     setPorEliminar(null)
-    await ejecutar(reserva, () => eliminarReserva(reserva.id), 'Reserva eliminada')
   }
 
   function alGuardar() {
@@ -125,7 +126,12 @@ export function ReservasPage() {
   }
 
   const botonNueva = (
-    <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormAbierto(true)}>
+    <Button
+      variant="contained"
+      startIcon={<AddIcon />}
+      disabled={cargandoClientes || cargandoHabitaciones}
+      onClick={() => setFormAbierto(true)}
+    >
       Nueva reserva
     </Button>
   )
@@ -148,7 +154,7 @@ export function ReservasPage() {
           label="Filtrar por estado"
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value as EstadoReserva | '')}
-          sx={{ minWidth: 220 }}
+          sx={{ minWidth: 224 }}
         >
           <MenuItem value="">Todos</MenuItem>
           {ESTADOS_RESERVA.map((estado) => (
@@ -189,6 +195,11 @@ export function ReservasPage() {
                   </TableCell>
                   <TableCell align="right">{formatearMoneda(reserva.precioTotal)}</TableCell>
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                    <Tooltip title="Ver detalle">
+                      <IconButton aria-label={`Ver detalle de la reserva ${reserva.id}`} onClick={() => setVerDetalle(reserva)}>
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
                     {TRANSICIONES.filter((t) => t.desde.includes(reserva.estado)).map((t) => (
                       <Button
                         key={t.texto}
@@ -233,11 +244,7 @@ export function ReservasPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        {cargando && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <CircularProgress aria-label="Cargando reservas" />
-          </div>
-        )}
+        {cargando && <CargandoTabla etiqueta="Cargando reservas" />}
         {!cargando && !error && reservas.length === 0 && (
           <EmptyState mensaje="Todavía no hay reservas registradas." accion={botonNueva} />
         )}
@@ -246,6 +253,14 @@ export function ReservasPage() {
         )}
       </Paper>
 
+      {verDetalle && (
+        <ReservaDetalleDialog
+          reserva={verDetalle}
+          cliente={nombreCliente(verDetalle.clienteId)}
+          habitaciones={numerosHabitaciones(verDetalle.habitacionesId)}
+          onCerrar={() => setVerDetalle(null)}
+        />
+      )}
       {formAbierto && (
         <ReservaFormDialog
           clientes={clientes}
@@ -259,6 +274,7 @@ export function ReservasPage() {
         titulo="Cancelar reserva"
         mensaje={`¿Seguro que quieres cancelar la reserva ${porCancelar?.id ?? ''}?`}
         textoConfirmar="Cancelar reserva"
+        procesando={enProceso !== null && enProceso === porCancelar?.id}
         onConfirmar={confirmarCancelar}
         onCancelar={() => setPorCancelar(null)}
       />
@@ -266,6 +282,7 @@ export function ReservasPage() {
         abierto={porEliminar !== null}
         titulo="Eliminar reserva"
         mensaje={`¿Seguro que quieres eliminar la reserva ${porEliminar?.id ?? ''}? Esta acción no se puede deshacer.`}
+        procesando={enProceso !== null && enProceso === porEliminar?.id}
         onConfirmar={confirmarEliminar}
         onCancelar={() => setPorEliminar(null)}
       />

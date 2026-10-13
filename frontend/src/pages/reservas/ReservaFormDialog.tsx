@@ -20,7 +20,9 @@ import type { Cliente } from '../../types/cliente'
 import type { ApiError } from '../../types/common'
 import type { Habitacion } from '../../types/habitacion'
 import { TEMPORADAS } from '../../utils/constantes'
+import { EstadoChip } from '../../components/EstadoChip'
 import { comoApiError, erroresPorCampo, mensajeDeError } from '../../utils/errores'
+import { etiquetaTipoHabitacion } from '../../utils/formato'
 import { validarReserva } from '../../utils/validaciones'
 import type { ErroresForm, ReservaForm } from '../../utils/validaciones'
 
@@ -138,8 +140,13 @@ export function ReservaFormDialog({ clientes, habitaciones, onCerrar, onGuardado
                 <MenuItem key={habitacion.id} value={habitacion.id}>
                   <Checkbox checked={valores.habitacionesId.includes(habitacion.id)} />
                   <ListItemText
-                    primary={`${habitacion.numero} · ${habitacion.tipoHabitacion.toLowerCase()}`}
-                    secondary={`Capacidad ${habitacion.capacidad}`}
+                    primary={`${habitacion.numero} · ${etiquetaTipoHabitacion(habitacion.tipoHabitacion)}`}
+                    secondary={
+                      <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        Capacidad {habitacion.capacidad}
+                        <EstadoChip valor={habitacion.estado} />
+                      </Box>
+                    }
                   />
                 </MenuItem>
               ))}
