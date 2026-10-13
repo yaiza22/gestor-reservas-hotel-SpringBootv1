@@ -14,11 +14,12 @@ import {
   MenuItem,
   TextField,
 } from '@mui/material'
-import { crearReserva } from '../../api/reservas.api'
+import { actualizarReserva, crearReserva } from '../../api/reservas.api'
 import { useNotify } from '../../hooks/useNotify'
 import type { Cliente } from '../../types/cliente'
 import type { ApiError } from '../../types/common'
 import type { Habitacion } from '../../types/habitacion'
+import type { Reserva } from '../../types/reserva'
 import { TEMPORADAS } from '../../utils/constantes'
 import { EstadoChip } from '../../components/EstadoChip'
 import { comoApiError, erroresPorCampo, mensajeDeError } from '../../utils/errores'
@@ -27,6 +28,8 @@ import { validarReserva } from '../../utils/validaciones'
 import type { ErroresForm, ReservaForm } from '../../utils/validaciones'
 
 interface ReservaFormDialogProps {
+  /** Reserva a editar; si es `null` el formulario crea una nueva. */
+  reserva: Reserva | null
   /** Clientes y habitaciones que se pueden elegir (se piden en la página). */
   clientes: Cliente[]
   habitaciones: Habitacion[]
@@ -35,19 +38,22 @@ interface ReservaFormDialogProps {
   onGuardado: () => void
 }
 
-const VALORES_INICIALES: ReservaForm = {
-  clienteId: '',
-  habitacionesId: [],
-  fechaInicio: '',
-  fechaFin: '',
-  cantHuespedes: '',
-  temporada: '',
+function valoresIniciales(reserva: Reserva | null): ReservaForm {
+  return {
+    clienteId: reserva?.clienteId ?? '',
+    habitacionesId: reserva?.habitacionesId ?? [],
+    fechaInicio: reserva?.fechaInicio ?? '',
+    fechaFin: reserva?.fechaFin ?? '',
+    cantHuespedes: reserva ? String(reserva.cantHuespedes) : '',
+    temporada: reserva?.temporada ?? '',
+  }
 }
 
-/** Formulario para crear una reserva (MODELO-DE-DATOS.md §6 y §8). El precio lo calcula el servidor. */
-export function ReservaFormDialog({ clientes, habitaciones, onCerrar, onGuardado }: ReservaFormDialogProps) {
+/** Formulario para crear o editar una reserva (MODELO-DE-DATOS.md §6 y §8). El precio lo calcula el servidor. */
+export function ReservaFormDialog({ reserva, clientes, habitaciones, onCerrar, onGuardado }: ReservaFormDialogProps) {
   const notify = useNotify()
-  const [valores, setValores] = useState<ReservaForm>(VALORES_INICIALES)
+  const esEdicion = reserva !== null
+  const [valores, setValores] = useState<ReservaForm>(() => valoresIniciales(reserva))
   const [errores, setErrores] = useState<ErroresForm>({})
   const [errorGeneral, setErrorGeneral] = useState<ApiError | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -69,15 +75,21 @@ export function ReservaFormDialog({ clientes, habitaciones, onCerrar, onGuardado
 
     setGuardando(true)
     try {
-      await crearReserva({
+      const datos = {
         clienteId: valores.clienteId,
         habitacionesId: valores.habitacionesId,
         fechaInicio: valores.fechaInicio,
         fechaFin: valores.fechaFin,
         cantHuespedes: Number(valores.cantHuespedes),
         temporada: valores.temporada,
-      })
-      notify.exito('Reserva creada')
+      }
+      if (reserva) {
+        await actualizarReserva(reserva.id, datos)
+        notify.exito('Reserva actualizada')
+      } else {
+        await crearReserva(datos)
+        notify.exito('Reserva creada')
+      }
       onGuardado()
     } catch (e: unknown) {
       const error = comoApiError(e)
@@ -94,7 +106,7 @@ export function ReservaFormDialog({ clientes, habitaciones, onCerrar, onGuardado
   return (
     <Dialog open onClose={guardando ? undefined : onCerrar} maxWidth="sm" fullWidth>
       <Box component="form" onSubmit={guardar} noValidate>
-        <DialogTitle>Nueva reserva</DialogTitle>
+        <DialogTitle>{esEdicion ? 'Editar reserva' : 'Nueva reserva'}</DialogTitle>
         <DialogContent>
           {errorGeneral && (
             <Alert severity="error" sx={{ mb: 2 }}>
