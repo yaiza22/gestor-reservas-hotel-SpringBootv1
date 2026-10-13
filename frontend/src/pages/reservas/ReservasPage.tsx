@@ -16,6 +16,7 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { listarClientes } from '../../api/clientes.api'
 import { listarHabitaciones } from '../../api/habitaciones.api'
@@ -65,6 +66,7 @@ export function ReservasPage() {
   const { datos: habitaciones, cargando: cargandoHabitaciones, error: errorHabitaciones } = useLista(listarHabitaciones)
   const [filtroEstado, setFiltroEstado] = useState<EstadoReserva | ''>('')
   const [formAbierto, setFormAbierto] = useState(false)
+  const [editando, setEditando] = useState<Reserva | null>(null)
   const [verDetalle, setVerDetalle] = useState<Reserva | null>(null)
   const [porCancelar, setPorCancelar] = useState<Reserva | null>(null)
   const [porEliminar, setPorEliminar] = useState<Reserva | null>(null)
@@ -119,6 +121,16 @@ export function ReservasPage() {
     setPorEliminar(null)
   }
 
+  function abrirNueva() {
+    setEditando(null)
+    setFormAbierto(true)
+  }
+
+  function abrirEdicion(reserva: Reserva) {
+    setEditando(reserva)
+    setFormAbierto(true)
+  }
+
   function alGuardar() {
     setFormAbierto(false)
     setErrorAccion(null)
@@ -130,7 +142,7 @@ export function ReservasPage() {
       variant="contained"
       startIcon={<AddIcon />}
       disabled={cargandoClientes || cargandoHabitaciones}
-      onClick={() => setFormAbierto(true)}
+      onClick={abrirNueva}
     >
       Nueva reserva
     </Button>
@@ -200,6 +212,19 @@ export function ReservasPage() {
                         <VisibilityIcon />
                       </IconButton>
                     </Tooltip>
+                    {(reserva.estado === 'PENDIENTE' || reserva.estado === 'CONFIRMADA') && (
+                      <Tooltip title="Editar">
+                        <span>
+                          <IconButton
+                            aria-label={`Editar reserva ${reserva.id}`}
+                            disabled={enProceso === reserva.id}
+                            onClick={() => abrirEdicion(reserva)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
                     {TRANSICIONES.filter((t) => t.desde.includes(reserva.estado)).map((t) => (
                       <Button
                         key={t.texto}
@@ -263,6 +288,7 @@ export function ReservasPage() {
       )}
       {formAbierto && (
         <ReservaFormDialog
+          reserva={editando}
           clientes={clientes}
           habitaciones={habitaciones}
           onCerrar={() => setFormAbierto(false)}

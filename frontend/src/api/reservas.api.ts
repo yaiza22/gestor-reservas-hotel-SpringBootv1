@@ -13,6 +13,12 @@ export async function crearReserva(cuerpo: ReservaRequest): Promise<Reserva> {
   return data
 }
 
+/** Edita una reserva PENDIENTE o CONFIRMADA y el servidor recalcula el precio (PUT /reservas/{id}). */
+export async function actualizarReserva(id: number, cuerpo: ReservaRequest): Promise<Reserva> {
+  const { data } = await gestionApi.put<Reserva>(`/reservas/${id}`, cuerpo)
+  return data
+}
+
 /** PENDIENTE → CONFIRMADA (POST /reservas/{id}/confirmar). */
 export async function confirmarReserva(id: number): Promise<Reserva> {
   const { data } = await gestionApi.post<Reserva>(`/reservas/${id}/confirmar`)
