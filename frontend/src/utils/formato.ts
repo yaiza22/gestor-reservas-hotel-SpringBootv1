@@ -1,3 +1,6 @@
+import type { TipoHabitacion } from '../types/habitacion'
+import { TIPOS_HABITACION } from './constantes'
+
 const FORMATO_MONEDA = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
@@ -13,4 +16,9 @@ export function formatearMoneda(valor: number): string {
 export function formatearFecha(fechaIso: string): string {
   const [anio, mes, dia] = fechaIso.split('-')
   return `${dia}/${mes}/${anio}`
+}
+
+/** Nombre legible del tipo de habitación («TWIN» → «Twin»). */
+export function etiquetaTipoHabitacion(tipo: TipoHabitacion): string {
+  return TIPOS_HABITACION.find((t) => t.valor === tipo)?.etiqueta ?? tipo
 }

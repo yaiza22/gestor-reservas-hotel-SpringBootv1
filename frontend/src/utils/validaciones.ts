@@ -16,6 +16,7 @@ function textoObligatorio(valor: string, obligatorio: string, max: number, super
   return undefined
 }
 
+/** Guarda el mensaje en `errores[campo]` solo si hay un error. */
 function agregar(errores: ErroresForm, campo: string, mensaje: string | undefined) {
   if (mensaje) errores[campo] = mensaje
 }
@@ -30,6 +31,7 @@ export interface PersonaForm {
   password: string
 }
 
+/** Revisa el tipo y el número de documento (solo al crear). */
 function validarDocumento(v: PersonaForm, errores: ErroresForm) {
   if (v.tipoDocIdentidad === '') errores.tipoDocIdentidad = 'Debe seleccionar un tipo de documento.'
   agregar(
@@ -44,6 +46,7 @@ function validarDocumento(v: PersonaForm, errores: ErroresForm) {
   )
 }
 
+/** Revisa nombre, teléfono y correo. */
 function validarContacto(v: PersonaForm, errores: ErroresForm) {
   agregar(errores, 'nombre', textoObligatorio(v.nombre, 'El nombre es obligatorio.', 100, 'El nombre no puede superar 100 caracteres.'))
   agregar(
@@ -60,6 +63,7 @@ function validarContacto(v: PersonaForm, errores: ErroresForm) {
   }
 }
 
+/** Revisa la contraseña (solo al crear). */
 function validarPassword(v: PersonaForm, errores: ErroresForm) {
   if (v.password === '') {
     errores.password = 'La contraseña es obligatoria.'

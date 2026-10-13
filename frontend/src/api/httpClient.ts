@@ -20,11 +20,12 @@ const CODIGOS_CONOCIDOS: CodigoError[] = [
   'SERVICIO_NO_DISPONIBLE',
 ]
 
-/** Revisa que el cuerpo de la respuesta tenga la forma de ProblemDetail sin usar `any`. */
+/** Comprueba que un valor `unknown` sea un objeto, para leerlo sin usar `any`. */
 function esObjeto(valor: unknown): valor is Record<string, unknown> {
   return typeof valor === 'object' && valor !== null
 }
 
+/** Lee la lista `errores[]` del cuerpo del error y descarta lo que no tenga la forma { campo, mensaje }. */
 function leerErrores(valor: unknown): ErrorCampo[] | undefined {
   if (!Array.isArray(valor)) return undefined
   const lista: ErrorCampo[] = []

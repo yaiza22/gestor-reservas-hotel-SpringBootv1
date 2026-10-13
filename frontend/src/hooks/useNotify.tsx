@@ -16,8 +16,12 @@ interface NotifyContextValue {
 
 const NotifyContext = createContext<NotifyContextValue | null>(null)
 
+interface NotifyProviderProps {
+  children: ReactNode
+}
+
 /** Reparte los avisos breves (éxito o error) a toda la aplicación y los muestra abajo. */
-export function NotifyProvider({ children }: { children: ReactNode }) {
+export function NotifyProvider({ children }: NotifyProviderProps) {
   const [mensaje, setMensaje] = useState<Mensaje | null>(null)
   const [abierto, setAbierto] = useState(false)
 

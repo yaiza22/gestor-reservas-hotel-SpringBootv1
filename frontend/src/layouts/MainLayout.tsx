@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { NOMBRE_APP, SECCIONES } from '../utils/constantes'
 
 /** Marco común de todas las pantallas: barra superior con las 4 secciones y el contenido debajo. */
@@ -19,7 +20,7 @@ export function MainLayout() {
                 to={seccion.ruta}
                 color="inherit"
                 sx={{
-                  '&.active': { bgcolor: 'rgba(255,255,255,0.2)', fontWeight: 700 },
+                  '&.active': { bgcolor: (tema) => alpha(tema.palette.common.white, 0.2), fontWeight: 700 },
                 }}
               >
                 {seccion.etiqueta}
