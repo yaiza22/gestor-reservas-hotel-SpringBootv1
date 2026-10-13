@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import {
   Button,
-  CircularProgress,
   IconButton,
   Paper,
   Table,
@@ -17,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import { eliminarCliente, listarClientes } from '../../api/clientes.api'
 import { AlertaError } from '../../components/AlertaError'
+import { CargandoTabla } from '../../components/CargandoTabla'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { EmptyState } from '../../components/EmptyState'
 import { PageHeader } from '../../components/PageHeader'
@@ -128,11 +128,7 @@ export function ClientesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        {cargando && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <CircularProgress aria-label="Cargando clientes" />
-          </div>
-        )}
+        {cargando && <CargandoTabla etiqueta="Cargando clientes" />}
         {!cargando && !error && clientes.length === 0 && (
           <EmptyState mensaje="Todavía no hay clientes registrados." accion={botonNuevo} />
         )}

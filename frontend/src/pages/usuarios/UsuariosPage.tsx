@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import {
   Button,
-  CircularProgress,
   IconButton,
   Paper,
   Table,
@@ -17,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import { eliminarUsuario, listarUsuarios } from '../../api/usuarios.api'
 import { AlertaError } from '../../components/AlertaError'
+import { CargandoTabla } from '../../components/CargandoTabla'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { EmptyState } from '../../components/EmptyState'
 import { EstadoChip } from '../../components/EstadoChip'
@@ -127,11 +127,7 @@ export function UsuariosPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        {cargando && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <CircularProgress aria-label="Cargando usuarios" />
-          </div>
-        )}
+        {cargando && <CargandoTabla etiqueta="Cargando usuarios" />}
         {!cargando && !error && usuarios.length === 0 && (
           <EmptyState mensaje="Todavía no hay usuarios registrados." accion={botonNuevo} />
         )}

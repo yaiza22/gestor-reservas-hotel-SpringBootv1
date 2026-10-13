@@ -3,7 +3,6 @@ import type { MouseEvent } from 'react'
 import {
   Box,
   Button,
-  CircularProgress,
   IconButton,
   Menu,
   MenuItem,
@@ -22,6 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import { cambiarEstadoHabitacion, eliminarHabitacion, listarHabitaciones } from '../../api/habitaciones.api'
 import { AlertaError } from '../../components/AlertaError'
+import { CargandoTabla } from '../../components/CargandoTabla'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { EmptyState } from '../../components/EmptyState'
 import { EstadoChip } from '../../components/EstadoChip'
@@ -30,15 +30,10 @@ import { useLista } from '../../hooks/useLista'
 import { useNotify } from '../../hooks/useNotify'
 import type { ApiError } from '../../types/common'
 import type { EstadoHabitacion, Habitacion } from '../../types/habitacion'
-import { ESTADOS_HABITACION, TIPOS_HABITACION } from '../../utils/constantes'
+import { ESTADOS_HABITACION } from '../../utils/constantes'
 import { comoApiError } from '../../utils/errores'
-import { formatearMoneda } from '../../utils/formato'
+import { etiquetaTipoHabitacion, formatearMoneda } from '../../utils/formato'
 import { HabitacionFormDialog } from './HabitacionFormDialog'
-
-/** Nombre legible del tipo de habitación («TWIN» → «Twin»). */
-function etiquetaTipo(tipo: Habitacion['tipoHabitacion']): string {
-  return TIPOS_HABITACION.find((t) => t.valor === tipo)?.etiqueta ?? tipo
-}
 
 /** Pantalla de habitaciones: tabla, filtro por estado, cambio rápido de estado, crear, editar y eliminar. */
 export function HabitacionesPage() {
@@ -125,7 +120,7 @@ export function HabitacionesPage() {
           label="Filtrar por estado"
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value as EstadoHabitacion | '')}
-          sx={{ minWidth: 220 }}
+          sx={{ minWidth: 224 }}
         >
           <MenuItem value="">Todos</MenuItem>
           {ESTADOS_HABITACION.map((estado) => (
@@ -156,7 +151,7 @@ export function HabitacionesPage() {
                 <TableRow key={habitacion.id} hover>
                   <TableCell>{habitacion.id}</TableCell>
                   <TableCell>{habitacion.numero}</TableCell>
-                  <TableCell>{etiquetaTipo(habitacion.tipoHabitacion)}</TableCell>
+                  <TableCell>{etiquetaTipoHabitacion(habitacion.tipoHabitacion)}</TableCell>
                   <TableCell align="right">{habitacion.piso}</TableCell>
                   <TableCell align="right">{formatearMoneda(habitacion.precioBase)}</TableCell>
                   <TableCell align="right">{habitacion.capacidad}</TableCell>
@@ -191,11 +186,7 @@ export function HabitacionesPage() {
             </TableBody>
           </Table>
         </TableContainer>
-        {cargando && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-            <CircularProgress aria-label="Cargando habitaciones" />
-          </div>
-        )}
+        {cargando && <CargandoTabla etiqueta="Cargando habitaciones" />}
         {!cargando && !error && habitaciones.length === 0 && (
           <EmptyState mensaje="Todavía no hay habitaciones registradas." accion={botonNueva} />
         )}

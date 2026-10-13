@@ -138,22 +138,22 @@ export function HabitacionFormDialog({ habitacion, onCerrar, onGuardado }: Habit
               fullWidth
             />
             <TextField
-              label="Capacidad (personas)"
-              value={valores.capacidad}
-              onChange={(e) => cambiar('capacidad', e.target.value)}
-              error={Boolean(errores.capacidad)}
-              helperText={errores.capacidad}
-              slotProps={{ htmlInput: { inputMode: 'numeric' } }}
-              required
-              fullWidth
-            />
-            <TextField
               label="Precio base por noche (COP)"
               value={valores.precioBase}
               onChange={(e) => cambiar('precioBase', e.target.value)}
               error={Boolean(errores.precioBase)}
               helperText={errores.precioBase}
               slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Capacidad (personas)"
+              value={valores.capacidad}
+              onChange={(e) => cambiar('capacidad', e.target.value)}
+              error={Boolean(errores.capacidad)}
+              helperText={errores.capacidad}
+              slotProps={{ htmlInput: { inputMode: 'numeric' } }}
               required
               fullWidth
             />
