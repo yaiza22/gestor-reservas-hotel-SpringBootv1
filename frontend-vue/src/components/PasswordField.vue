@@ -18,7 +18,15 @@ const visible = ref(false)
     hint="Entre 8 y 60 caracteres."
     persistent-hint
     autocomplete="new-password"
-    :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-    @click:append-inner="visible = !visible"
-  />
+  >
+    <template #append-inner>
+      <v-btn
+        :icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+        variant="text"
+        size="small"
+        :aria-label="visible ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        @click="visible = !visible"
+      />
+    </template>
+  </v-text-field>
 </template>
