@@ -4,6 +4,7 @@ import com.gestor_reservas_hotel.gestor_reservas_hotel.dto.ClienteRequest;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.TipoDocIdentidad;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.services.ClienteService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 /**
  * Carga los 4 clientes de demostración al arrancar si {@code app.datos-iniciales=true}.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "app.datos-iniciales", havingValue = "true")
@@ -23,14 +25,16 @@ public class DatosInicialesClientes implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        crear(TipoDocIdentidad.CC, "1000000001", "Ana Pérez", "3001234567", "ana@correo.com",
-                "Colombiana", "Colombia");
-        crear(TipoDocIdentidad.CC, "1000000002", "Carlos Ruiz", "3002345678", "carlos@correo.com",
-                "Colombiano", "Colombia");
-        crear(TipoDocIdentidad.PA, "AB123456", "María Gómez", "34600123456", "maria@correo.com",
-                "Española", "España");
-        crear(TipoDocIdentidad.PA, "X9876543", "John Smith", "12025550123", "john@correo.com",
-                "Estadounidense", "Estados Unidos");
+        // Con persistencia, cargar en cada arranque daría 409 por el documento repetido
+        if (!clienteService.listar().isEmpty()) {
+            log.info("Datos de demostración omitidos: ya hay clientes guardados");
+            return;
+        }
+        crear(TipoDocIdentidad.CC, "1000000001", "Ana Pérez", "3001234567", "ana@correo.com", "Colombiana", "Colombia");
+        crear(TipoDocIdentidad.CC, "1000000002", "Carlos Ruiz", "3002345678", "carlos@correo.com", "Colombiano", "Colombia");
+        crear(TipoDocIdentidad.PA, "AB123456", "María Gómez", "34600123456", "maria@correo.com", "Española", "España");
+        crear(TipoDocIdentidad.PA, "X9876543", "John Smith", "12025550123", "john@correo.com", "Estadounidense", "Estados Unidos");
+        log.info("Datos de demostración cargados: {} clientes", clienteService.listar().size());
     }
 
     private void crear(TipoDocIdentidad tipo, String documento, String nombre, String telefono, String correo,

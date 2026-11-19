@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   Box,
   Button,
@@ -58,13 +58,24 @@ const TRANSICIONES: Transicion[] = [
   { texto: 'Check-out', desde: ['ENCURSO'], ejecutar: registrarCheckOut, exito: 'Check-out registrado' },
 ]
 
-/** Pantalla de reservas: tabla, filtro por estado, crear, cambiar de estado y eliminar. */
+/** Pantalla de reservas: tabla, filtros por estado y cliente, crear, cambiar de estado y eliminar. */
 export function ReservasPage() {
   const notify = useNotify()
-  const { datos: reservas, cargando, error, recargar } = useLista(listarReservas)
+  const [filtroEstado, setFiltroEstado] = useState<EstadoReserva | ''>('')
+  const [filtroCliente, setFiltroCliente] = useState<number | ''>('')
+  // Los filtros los aplica el servidor; '' significa «sin filtro» y ese parámetro no se envía
+  const traerReservas = useCallback(
+    () =>
+      listarReservas({
+        estado: filtroEstado || undefined,
+        clienteId: filtroCliente === '' ? undefined : filtroCliente,
+      }),
+    [filtroEstado, filtroCliente],
+  )
+  const { datos: reservas, cargando, error, recargar } = useLista(traerReservas)
   const { datos: clientes, cargando: cargandoClientes, error: errorClientes } = useLista(listarClientes)
   const { datos: habitaciones, cargando: cargandoHabitaciones, error: errorHabitaciones } = useLista(listarHabitaciones)
-  const [filtroEstado, setFiltroEstado] = useState<EstadoReserva | ''>('')
+  const hayFiltros = filtroEstado !== '' || filtroCliente !== ''
   const [formAbierto, setFormAbierto] = useState(false)
   const [editando, setEditando] = useState<Reserva | null>(null)
   const [verDetalle, setVerDetalle] = useState<Reserva | null>(null)
@@ -73,11 +84,6 @@ export function ReservasPage() {
   // Reserva con una acción en marcha: se deshabilitan sus botones para no enviarla dos veces
   const [enProceso, setEnProceso] = useState<number | null>(null)
   const [errorAccion, setErrorAccion] = useState<ApiError | null>(null)
-
-  const visibles = useMemo(
-    () => (filtroEstado === '' ? reservas : reservas.filter((r) => r.estado === filtroEstado)),
-    [reservas, filtroEstado],
-  )
 
   /** Nombre del cliente. Si la lista no se pudo cargar no se sabe, así que se muestra el id en vez de decir «eliminado». */
   function nombreCliente(id: number): string {
@@ -159,7 +165,7 @@ export function ReservasPage() {
   return (
     <>
       <PageHeader titulo="Reservas" accion={botonNueva} />
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         <TextField
           select
           size="small"
@@ -172,6 +178,22 @@ export function ReservasPage() {
           {ESTADOS_RESERVA.map((estado) => (
             <MenuItem key={estado} value={estado}>
               <EstadoChip valor={estado} />
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label="Filtrar por cliente"
+          value={filtroCliente}
+          onChange={(e) => setFiltroCliente(e.target.value === '' ? '' : Number(e.target.value))}
+          disabled={cargandoClientes || errorClientes !== null}
+          sx={{ minWidth: 280 }}
+        >
+          <MenuItem value="">Todos</MenuItem>
+          {clientes.map((cliente) => (
+            <MenuItem key={cliente.id} value={cliente.id}>
+              {cliente.nombre} · {cliente.tipoDocIdentidad} {cliente.numDocIdentidad}
             </MenuItem>
           ))}
         </TextField>
@@ -195,7 +217,7 @@ export function ReservasPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibles.map((reserva) => (
+              {reservas.map((reserva) => (
                 <TableRow key={reserva.id} hover>
                   <TableCell>{reserva.id}</TableCell>
                   <TableCell>{nombreCliente(reserva.clienteId)}</TableCell>
@@ -270,11 +292,11 @@ export function ReservasPage() {
           </Table>
         </TableContainer>
         {cargando && <CargandoTabla etiqueta="Cargando reservas" />}
-        {!cargando && !error && reservas.length === 0 && (
+        {!cargando && !error && reservas.length === 0 && !hayFiltros && (
           <EmptyState mensaje="Todavía no hay reservas registradas." accion={botonNueva} />
         )}
-        {!cargando && !error && reservas.length > 0 && visibles.length === 0 && (
-          <EmptyState mensaje="No hay reservas con ese estado." />
+        {!cargando && !error && reservas.length === 0 && hayFiltros && (
+          <EmptyState mensaje="No hay reservas con esos filtros." />
         )}
       </Paper>
 

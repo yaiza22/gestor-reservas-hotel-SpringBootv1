@@ -2,13 +2,13 @@ package com.gestor_reservas_hotel.habitaciones.repository;
 
 import com.gestor_reservas_hotel.habitaciones.model.Habitacion;
 
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface HabitacionRepository {
-    Habitacion save(Habitacion habitacion);
-    Optional<Habitacion> findById(Long id);
-    List<Habitacion> findAll();
+/**
+ * Acceso a la colección "habitaciones"; ahora es Spring Data quien genera la implementación.
+ */
+public interface HabitacionRepository extends MongoRepository<Habitacion, Long> {
+
+    /** Si ya existe una habitación con ese número. */
     boolean existsByNumero(String numero);
-    void deleteById(Long id);
 }

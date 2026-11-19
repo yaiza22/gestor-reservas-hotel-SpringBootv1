@@ -2,23 +2,12 @@ package com.gestor_reservas_hotel.gestor_reservas_hotel.repository;
 
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.Cliente;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.TipoDocIdentidad;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
- * Acceso a los datos de los clientes (con nombres de métodos al estilo Spring Data).
+ * Acceso a la colección "clientes"; Spring Data genera la implementación.
  */
-public interface ClienteRepository {
-
-    Cliente save(Cliente cliente);
-
-    Optional<Cliente> findById(Long id);
-
-    List<Cliente> findAll();
-
-    boolean existsById(Long id);
-
+public interface ClienteRepository extends MongoRepository<Cliente, Long> {
+    /** Para indicar si ya existe un cliente con ese tipo y número de documento. */
     boolean existsByTipoDocIdentidadAndNumDocIdentidad(TipoDocIdentidad tipoDocIdentidad, String numDocIdentidad);
-
-    void deleteById(Long id);
 }

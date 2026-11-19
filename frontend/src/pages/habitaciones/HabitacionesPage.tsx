@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { MouseEvent } from 'react'
 import {
   Box,
@@ -29,17 +29,24 @@ import { PageHeader } from '../../components/PageHeader'
 import { useLista } from '../../hooks/useLista'
 import { useNotify } from '../../hooks/useNotify'
 import type { ApiError } from '../../types/common'
-import type { EstadoHabitacion, Habitacion } from '../../types/habitacion'
-import { ESTADOS_HABITACION } from '../../utils/constantes'
+import type { EstadoHabitacion, Habitacion, TipoHabitacion } from '../../types/habitacion'
+import { ESTADOS_HABITACION, TIPOS_HABITACION } from '../../utils/constantes'
 import { comoApiError } from '../../utils/errores'
 import { etiquetaTipoHabitacion, formatearMoneda } from '../../utils/formato'
 import { HabitacionFormDialog } from './HabitacionFormDialog'
 
-/** Pantalla de habitaciones: tabla, filtro por estado, cambio rápido de estado, crear, editar y eliminar. */
+/** Pantalla de habitaciones: tabla, filtros por estado y tipo, cambio rápido de estado, crear, editar y eliminar. */
 export function HabitacionesPage() {
   const notify = useNotify()
-  const { datos: habitaciones, cargando, error, recargar } = useLista(listarHabitaciones)
   const [filtroEstado, setFiltroEstado] = useState<EstadoHabitacion | ''>('')
+  const [filtroTipo, setFiltroTipo] = useState<TipoHabitacion | ''>('')
+  // Los filtros los aplica el servidor; '' significa «sin filtro» y ese parámetro no se envía
+  const traerHabitaciones = useCallback(
+    () => listarHabitaciones({ estado: filtroEstado || undefined, tipoHabitacion: filtroTipo || undefined }),
+    [filtroEstado, filtroTipo],
+  )
+  const { datos: habitaciones, cargando, error, recargar } = useLista(traerHabitaciones)
+  const hayFiltros = filtroEstado !== '' || filtroTipo !== ''
   const [formAbierto, setFormAbierto] = useState(false)
   const [editando, setEditando] = useState<Habitacion | null>(null)
   const [porEliminar, setPorEliminar] = useState<Habitacion | null>(null)
@@ -47,11 +54,6 @@ export function HabitacionesPage() {
   const [errorAccion, setErrorAccion] = useState<ApiError | null>(null)
   // Menú del cambio rápido de estado: qué habitación y dónde se abre
   const [menuEstado, setMenuEstado] = useState<{ habitacion: Habitacion; ancla: HTMLElement } | null>(null)
-
-  const visibles = useMemo(
-    () => (filtroEstado === '' ? habitaciones : habitaciones.filter((h) => h.estado === filtroEstado)),
-    [habitaciones, filtroEstado],
-  )
 
   function abrirNueva() {
     setEditando(null)
@@ -113,7 +115,7 @@ export function HabitacionesPage() {
   return (
     <>
       <PageHeader titulo="Habitaciones" accion={botonNueva} />
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
         <TextField
           select
           size="small"
@@ -126,6 +128,21 @@ export function HabitacionesPage() {
           {ESTADOS_HABITACION.map((estado) => (
             <MenuItem key={estado} value={estado}>
               <EstadoChip valor={estado} />
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
+          size="small"
+          label="Filtrar por tipo"
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value as TipoHabitacion | '')}
+          sx={{ minWidth: 224 }}
+        >
+          <MenuItem value="">Todos</MenuItem>
+          {TIPOS_HABITACION.map((tipo) => (
+            <MenuItem key={tipo.valor} value={tipo.valor}>
+              {tipo.etiqueta}
             </MenuItem>
           ))}
         </TextField>
@@ -147,7 +164,7 @@ export function HabitacionesPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {visibles.map((habitacion) => (
+              {habitaciones.map((habitacion) => (
                 <TableRow key={habitacion.id} hover>
                   <TableCell>{habitacion.id}</TableCell>
                   <TableCell>{habitacion.numero}</TableCell>
@@ -187,11 +204,11 @@ export function HabitacionesPage() {
           </Table>
         </TableContainer>
         {cargando && <CargandoTabla etiqueta="Cargando habitaciones" />}
-        {!cargando && !error && habitaciones.length === 0 && (
+        {!cargando && !error && habitaciones.length === 0 && !hayFiltros && (
           <EmptyState mensaje="Todavía no hay habitaciones registradas." accion={botonNueva} />
         )}
-        {!cargando && !error && habitaciones.length > 0 && visibles.length === 0 && (
-          <EmptyState mensaje="No hay habitaciones con ese estado." />
+        {!cargando && !error && habitaciones.length === 0 && hayFiltros && (
+          <EmptyState mensaje="No hay habitaciones con esos filtros." />
         )}
       </Paper>
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   CircularProgress,
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   MenuItem,
   TextField,
+  createFilterOptions,
 } from '@mui/material'
 import { actualizarCliente, crearCliente } from '../../api/clientes.api'
 import { PasswordField } from '../../components/PasswordField'
@@ -19,8 +21,12 @@ import type { Cliente } from '../../types/cliente'
 import type { ApiError } from '../../types/common'
 import { TIPOS_DOCUMENTO } from '../../utils/constantes'
 import { comoApiError, erroresPorCampo, mensajeDeError } from '../../utils/errores'
+import { NOMBRES_PAISES, nacionalidadDePais } from '../../utils/paises'
 import { validarCliente } from '../../utils/validaciones'
 import type { ClienteForm, ErroresForm } from '../../utils/validaciones'
+
+/** Sugerencias de países que empiezan por lo escrito (sin importar tildes ni mayúsculas). */
+const filtrarPaises = createFilterOptions<string>({ matchFrom: 'start' })
 
 interface ClienteFormDialogProps {
   /** Cliente a editar; si es `null` el formulario crea uno nuevo. */
@@ -54,6 +60,16 @@ export function ClienteFormDialog({ cliente, onCerrar, onGuardado }: ClienteForm
 
   function cambiar<K extends keyof ClienteForm>(campo: K, valor: ClienteForm[K]) {
     setValores((anteriores) => ({ ...anteriores, [campo]: valor }))
+  }
+
+  /** Guarda el país escrito o elegido y, si es un país de la lista, rellena la nacionalidad (se puede editar después). */
+  function cambiarPais(pais: string) {
+    const nacionalidad = nacionalidadDePais(pais)
+    setValores((anteriores) => ({
+      ...anteriores,
+      paisResidencia: pais,
+      nacionalidad: nacionalidad ?? anteriores.nacionalidad,
+    }))
   }
 
   async function guardar(evento: FormEvent) {
@@ -179,14 +195,22 @@ export function ClienteFormDialog({ cliente, onCerrar, onGuardado }: ClienteForm
               required
               fullWidth
             />
-            <TextField
-              label="País de residencia"
-              value={valores.paisResidencia}
-              onChange={(e) => cambiar('paisResidencia', e.target.value)}
-              error={Boolean(errores.paisResidencia)}
-              helperText={errores.paisResidencia}
-              required
-              fullWidth
+            <Autocomplete
+              freeSolo
+              options={NOMBRES_PAISES}
+              filterOptions={filtrarPaises}
+              inputValue={valores.paisResidencia}
+              onInputChange={(_evento, texto) => cambiarPais(texto)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="País de residencia"
+                  error={Boolean(errores.paisResidencia)}
+                  helperText={errores.paisResidencia}
+                  required
+                  fullWidth
+                />
+              )}
             />
           </Box>
         </DialogContent>
