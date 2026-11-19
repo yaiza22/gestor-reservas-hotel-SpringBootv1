@@ -2,24 +2,25 @@
 
 Aplicación web para gestionar **usuarios, clientes, habitaciones y reservas** de un hotel. Es la migración de un
 monolito Java/Swing (MVC) a una arquitectura con **dos backends Spring Boot** —un backend de gestión y un
-microservicio de habitaciones—, **dos interfaces web** (React y Vue) y datos persistentes en **MongoDB**. Cada backend
+microservicio de habitaciones—, **dos interfaces web** (una en React para la gestión del hotel y otra en Vue para las
+habitaciones) y datos persistentes en **MongoDB**. Cada backend
 documenta su API con **Swagger (OpenAPI)**.
 
 ## Arquitectura
 
 ```
-Frontend React (:5173) ─┐
-Frontend Vue   (:5174) ─┤
-                        ├──► backend-gestion (:8080)  ·  usuarios · clientes · reservas ───► MongoDB hotel_gestion
-                        │          │  HTTP/JSON
-                        │          ▼
-                        └──► microservicio-habitaciones (:8081)  ·  habitaciones ──────────► MongoDB hotel_habitaciones
+Frontend React (:5173)  Gestor de Reservas ──────► backend-gestion (:8080)  ·  usuarios · clientes · reservas ──► MongoDB hotel_gestion
+  (lee :8081 solo para elegir habitaciones)                   │  HTTP/JSON
+                                                              ▼
+Frontend Vue (:5174)  Gestión de Habitaciones ───► microservicio-habitaciones (:8081)  ·  habitaciones ─────────► MongoDB hotel_habitaciones
 ```
 
 - **backend-gestion** (puerto 8080): usuarios, clientes y reservas. Base de datos `hotel_gestion`.
 - **microservicio-habitaciones** (puerto 8081): habitaciones, cálculo de precios y estado. Base de datos `hotel_habitaciones`.
-- **frontend** (puerto 5173): interfaz web en React.
-- **frontend-vue** (puerto 5174): la misma interfaz, hecha con Vue.
+- **frontend** (puerto 5173): interfaz en React, **Gestor de Reservas de Hotel**: reservas, clientes y usuarios. Lee la
+  lista de habitaciones del microservicio solo para elegirlas al crear una reserva.
+- **frontend-vue** (puerto 5174): interfaz en Vue, **Gestión de Habitaciones de Hotel**: la pantalla de habitaciones,
+  conectada solo al microservicio.
 
 Cuando se crea una reserva, o se hace check-in o check-out, el backend de gestión consulta y actualiza el
 microservicio por HTTP: valida las habitaciones, calcula el precio por noche y cambia su estado
@@ -87,8 +88,8 @@ npm run dev
 
 | Qué | Dirección |
 |---|---|
-| Interfaz React | http://localhost:5173 |
-| Interfaz Vue | http://localhost:5174 |
+| Interfaz React (reservas, clientes y usuarios) | http://localhost:5173 |
+| Interfaz Vue (habitaciones) | http://localhost:5174 |
 | Swagger de gestión | http://localhost:8080/swagger-ui.html |
 | Swagger de habitaciones | http://localhost:8081/swagger-ui.html |
 | OpenAPI (JSON) | http://localhost:8080/v3/api-docs · http://localhost:8081/v3/api-docs |
@@ -126,7 +127,7 @@ Al volver a arrancar los servicios (microservicio primero) se cargan de nuevo lo
 | Etiqueta | Contenido |
 |---|---|
 | `v1.0.0` | CRUD con datos en memoria, 2 backends y frontend React |
-| `v2.0.0` | Datos persistentes en MongoDB, documentación Swagger y segunda interfaz en Vue |
+| `v2.0.0` | Datos persistentes en MongoDB, documentación Swagger y segunda interfaz en Vue para las habitaciones |
 
 ## Equipo
 

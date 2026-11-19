@@ -1,8 +1,9 @@
-# Frontend Vue — Gestor de Reservas de Hotel
+# Frontend Vue — Gestión de Habitaciones de Hotel
 
-Segunda interfaz web del gestor de reservas. Es **igual a la interfaz React** (mismas pantallas, rutas, columnas,
-formularios, validaciones y mensajes), pero hecha con **Vue 3 y Vuetify**. Consume los mismos dos backends, así que las dos
-interfaces trabajan sobre los mismos datos de MongoDB: lo que se crea en una aparece en la otra.
+Interfaz del **microservicio de habitaciones**, hecha con **Vue 3 y Vuetify**. Tiene una sola pantalla, Habitaciones, y
+solo habla con el microservicio (`:8081`). Reservas, clientes y usuarios se administran en la otra interfaz, el **Gestor
+de Reservas de Hotel** (React, puerto 5173). Las dos trabajan sobre los mismos datos de MongoDB: una habitación creada
+aquí se puede elegir al crear una reserva en React, y el check-in de React cambia su estado aquí.
 
 ## Tecnologías
 
@@ -12,8 +13,8 @@ ESLint 10 y Oxlint
 ## Requisitos
 
 - Node.js 22.18 o superior (`node -v`; el `package.json` exige `^22.18.0` o `>=24.12.0`).
-- MongoDB encendido y los **dos backends** arrancados: el microservicio de habitaciones (`:8081`) y el backend de
-  gestión (`:8080`). Cómo arrancarlos está en el `README.md` de la raíz del repositorio.
+- MongoDB encendido y el **microservicio de habitaciones** (`:8081`) arrancado. Cómo arrancarlo está en el `README.md`
+  de la raíz del repositorio.
 
 ## Cómo ejecutarlo
 
@@ -34,8 +35,8 @@ El archivo `.env` no se sube al repositorio; se crea copiando `.env.example`.
 
 | Variable | Valor | Para qué sirve |
 |---|---|---|
-| `VITE_GESTION_API_URL` | `http://localhost:8080/api` | Backend de gestión: clientes, usuarios y reservas |
-| `VITE_HABITACIONES_API_URL` | `http://localhost:8081/api` | Microservicio de habitaciones |
+| `VITE_HABITACIONES_API_URL` | `http://localhost:8081/api` | Microservicio de habitaciones (el que usa esta interfaz) |
+| `VITE_GESTION_API_URL` | `http://localhost:8080/api` | Backend de gestión. Esta interfaz no lo usa, pero `src/api/` es copia exacta de React y lo declara |
 
 Si se cambia el `.env`, hay que detener y volver a ejecutar `npm run dev`.
 
@@ -52,19 +53,12 @@ Si se cambia el `.env`, hay que detener y volver a ejecutar `npm run dev`.
 
 | Ruta | Pantalla | Backend que usa |
 |---|---|---|
-| `/reservas` | Lista con filtros por estado y por cliente; crear, editar, ver detalle, confirmar, check-in, check-out, cancelar y eliminar | Gestión (`:8080`) |
 | `/habitaciones` | Lista con filtros por estado y por tipo; crear, editar, eliminar y cambiar el estado desde el chip | Habitaciones (`:8081`) |
-| `/clientes` | Lista; crear, editar y eliminar. El país de residencia se elige de una lista y rellena la nacionalidad | Gestión (`:8080`) |
-| `/usuarios` | Lista; crear, editar y eliminar | Gestión (`:8080`) |
 
-La raíz `/` y cualquier ruta desconocida llevan a `/reservas`.
+La raíz `/` y cualquier ruta desconocida llevan a `/habitaciones`.
 
-**Filtros.** Los aplica el servidor con los parámetros de la API: `GET /api/habitaciones?estado=&tipoHabitacion=` y
-`GET /api/reservas?estado=&clienteId=`. Se puede usar uno solo o los dos a la vez; un filtro en «Todos» no se envía.
-
-**Países.** Al escribir en «País de residencia» se sugieren los países que empiezan por esas letras (sin importar tildes
-ni mayúsculas) y, al elegir uno, la nacionalidad se rellena sola (Colombia → Colombiana). Los dos campos siguen siendo
-editables. La lista es fija y está en `src/utils/paises.ts`.
+**Filtros.** Los aplica el servidor con los parámetros de la API `GET /api/habitaciones?estado=&tipoHabitacion=`. Se
+puede usar uno solo o los dos a la vez; un filtro en «Todos» no se envía.
 
 ## Estructura
 
@@ -75,8 +69,8 @@ src/
 ├── utils/        COPIA EXACTA de frontend/src/utils: constantes, formatos, validaciones y lista de países
 ├── components/   piezas reutilizables (.vue): encabezado, diálogo de confirmación, chip de estado, alertas…
 ├── composables/  useLista (carga de tablas) y useNotify (mensajes de éxito y error)
-├── layouts/      MainLayout.vue: barra superior con el menú de las 4 secciones
-├── views/        una carpeta por pantalla, con su vista y sus diálogos
+├── layouts/      MainLayout.vue: barra superior «Gestión de Habitaciones de Hotel»
+├── views/        habitaciones/ (la pantalla de esta interfaz); clientes/, usuarios/ y reservas/ ya no tienen ruta
 ├── plugins/      vuetify.ts: tema con los mismos colores que React · vuetify.css: tipografía, botones y tablas
 ├── router/       index.ts: tabla de rutas
 └── main.ts · App.vue
@@ -99,6 +93,5 @@ la misma forma. Si se cambia algo en una de esas carpetas, hay que cambiarlo tam
 | Síntoma | Qué revisar |
 |---|---|
 | «Port 5174 is already in use» | Hay otra ventana de Vue abierta, o la interfaz React tomó el 5174 porque el 5173 estaba ocupado. Cerrar ese proceso |
-| La pantalla muestra «Sin conexión» o el navegador habla de CORS | El backend de esa pantalla está apagado, o falta el archivo `.env` |
-| Al crear o pasar una reserva a check-in sale el mensaje de servicio no disponible | El microservicio de habitaciones (`:8081`) está apagado; es el comportamiento esperado (503) |
+| La pantalla muestra «No se pudo comunicar con el servicio de habitaciones» | El microservicio (`:8081`) está apagado, o falta el archivo `.env` |
 | `npm install` o `npm run dev` fallan por la versión de Node | Instalar Node 22.18 o superior |

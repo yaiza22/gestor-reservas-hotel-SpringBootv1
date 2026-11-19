@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router'
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { NOMBRE_APP, SECCIONES } from '../utils/constantes'
+import { NOMBRE_APP, SECCIONES_GESTION } from '../utils/constantes'
 
 /** Marco común de todas las pantallas: barra superior con las 4 secciones y el contenido debajo. */
 export function MainLayout() {
@@ -13,7 +13,7 @@ export function MainLayout() {
             {NOMBRE_APP}
           </Typography>
           <Box component="nav" aria-label="Secciones" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {SECCIONES.map((seccion) => (
+            {SECCIONES_GESTION.map((seccion) => (
               <Button
                 key={seccion.ruta}
                 component={NavLink}

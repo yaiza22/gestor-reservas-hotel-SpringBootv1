@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { NOMBRE_APP, SECCIONES } from '@/utils/constantes'
+import { NOMBRE_APP_HABITACIONES, SECCIONES_HABITACIONES } from '@/utils/constantes'
 </script>
 
 <template>
   <v-app-bar color="primary" flat>
-    <div class="titulo-app">{{ NOMBRE_APP }}</div>
+    <div class="titulo-app">{{ NOMBRE_APP_HABITACIONES }}</div>
     <nav aria-label="Secciones" class="d-flex ga-2">
       <v-btn
-        v-for="seccion in SECCIONES"
+        v-for="seccion in SECCIONES_HABITACIONES"
         :key="seccion.ruta"
         :to="seccion.ruta"
         variant="text"
