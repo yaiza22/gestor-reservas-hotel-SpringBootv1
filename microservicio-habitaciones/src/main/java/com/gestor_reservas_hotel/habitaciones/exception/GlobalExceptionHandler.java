@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -114,6 +116,20 @@ public class GlobalExceptionHandler {
         return construir(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Tipo de contenido no soportado",
                 "El cuerpo de la solicitud debe enviarse como JSON (Content-Type: application/json).",
                 "TIPO_NO_SOPORTADO", null);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ProblemDetail> manejarClaveDuplicada(DuplicateKeyException e) {
+        // Solo ocurre si dos solicitudes iguales llegan a la vez y ambas pasan la validación del servicio
+        log.error("El índice único de MongoDB rechazó un registro duplicado");
+        return construir(HttpStatus.CONFLICT, "Conflicto", "Ya existe un registro con esos datos.", "CONFLICTO", null);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ProblemDetail> manejarBaseDeDatos(DataAccessException e) {
+        log.error("La base de datos no responde: {}", e.getClass().getSimpleName());
+        return construir(HttpStatus.SERVICE_UNAVAILABLE, "Servicio no disponible",
+                "La base de datos no responde. Intenta de nuevo en unos minutos.", "SERVICIO_NO_DISPONIBLE", null);
     }
 
     @ExceptionHandler(Exception.class)

@@ -10,7 +10,9 @@ import com.gestor_reservas_hotel.habitaciones.model.enums.TipoHabitacion;
 import com.gestor_reservas_hotel.habitaciones.repository.HabitacionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,7 +37,7 @@ public class HabitacionService {
      * @return habitaciones ordenadas por id
      */
     public List<Habitacion> listar(EstadoHabitacion estado, TipoHabitacion tipoHabitacion) {
-        return repository.findAll().stream()
+        return repository.findAll(Sort.by("id")).stream()
                 .filter(h -> estado == null || h.getEstado() == estado)
                 .filter(h -> tipoHabitacion == null || h.getTipoHabitacion() == tipoHabitacion)
                 .toList();

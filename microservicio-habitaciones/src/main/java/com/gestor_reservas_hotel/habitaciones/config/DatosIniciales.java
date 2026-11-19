@@ -39,6 +39,11 @@ public class DatosIniciales implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        // Con persistencia, cargar en cada arranque duplicaría registros o daría 409 por el número repetido
+        if (repository.count() > 0) {
+            log.info("Datos de demostración omitidos: ya hay habitaciones guardadas");
+            return;
+        }
         agregar("101", TipoHabitacion.INDIVIDUAL, 1, "100000.00", 1, EstadoHabitacion.DISPONIBLE);
         agregar("102", TipoHabitacion.INDIVIDUAL, 1, "100000.00", 1, EstadoHabitacion.DISPONIBLE);
         agregar("103", TipoHabitacion.DOBLE, 1, "150000.00", 2, EstadoHabitacion.DISPONIBLE);
@@ -49,6 +54,6 @@ public class DatosIniciales implements ApplicationRunner {
         agregar("301", TipoHabitacion.FAMILIAR, 3, "200000.00", 4, EstadoHabitacion.DISPONIBLE);
         agregar("302", TipoHabitacion.FAMILIAR, 3, "200000.00", 5, EstadoHabitacion.LIMPIEZA);
         agregar("303", TipoHabitacion.DOBLE, 3, "160000.00", 2, EstadoHabitacion.DISPONIBLE);
-        log.info("Datos de demostración cargados: {} habitaciones", repository.findAll().size());
+        log.info("Datos de demostración cargados: {} habitaciones", repository.count());
     }
 }
