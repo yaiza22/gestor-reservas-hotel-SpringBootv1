@@ -52,12 +52,19 @@ Si se cambia el `.env`, hay que detener y volver a ejecutar `npm run dev`.
 
 | Ruta | Pantalla | Backend que usa |
 |---|---|---|
-| `/reservas` | Lista con filtro por estado; crear, editar, ver detalle, confirmar, check-in, check-out, cancelar y eliminar | Gestión (`:8080`) |
-| `/habitaciones` | Lista con filtro por estado; crear, editar, eliminar y cambiar el estado desde el chip | Habitaciones (`:8081`) |
-| `/clientes` | Lista; crear, editar y eliminar | Gestión (`:8080`) |
+| `/reservas` | Lista con filtros por estado y por cliente; crear, editar, ver detalle, confirmar, check-in, check-out, cancelar y eliminar | Gestión (`:8080`) |
+| `/habitaciones` | Lista con filtros por estado y por tipo; crear, editar, eliminar y cambiar el estado desde el chip | Habitaciones (`:8081`) |
+| `/clientes` | Lista; crear, editar y eliminar. El país de residencia se elige de una lista y rellena la nacionalidad | Gestión (`:8080`) |
 | `/usuarios` | Lista; crear, editar y eliminar | Gestión (`:8080`) |
 
 La raíz `/` y cualquier ruta desconocida llevan a `/reservas`.
+
+**Filtros.** Los aplica el servidor con los parámetros de la API: `GET /api/habitaciones?estado=&tipoHabitacion=` y
+`GET /api/reservas?estado=&clienteId=`. Se puede usar uno solo o los dos a la vez; un filtro en «Todos» no se envía.
+
+**Países.** Al escribir en «País de residencia» se sugieren los países que empiezan por esas letras (sin importar tildes
+ni mayúsculas) y, al elegir uno, la nacionalidad se rellena sola (Colombia → Colombiana). Los dos campos siguen siendo
+editables. La lista es fija y está en `src/utils/paises.ts`.
 
 ## Estructura
 
@@ -65,12 +72,12 @@ La raíz `/` y cualquier ruta desconocida llevan a `/reservas`.
 src/
 ├── api/          COPIA EXACTA de frontend/src/api: llamadas HTTP (Axios) y traducción de errores
 ├── types/        COPIA EXACTA de frontend/src/types: tipos de cada entidad
-├── utils/        COPIA EXACTA de frontend/src/utils: constantes, formatos y validaciones de formularios
+├── utils/        COPIA EXACTA de frontend/src/utils: constantes, formatos, validaciones y lista de países
 ├── components/   piezas reutilizables (.vue): encabezado, diálogo de confirmación, chip de estado, alertas…
 ├── composables/  useLista (carga de tablas) y useNotify (mensajes de éxito y error)
 ├── layouts/      MainLayout.vue: barra superior con el menú de las 4 secciones
 ├── views/        una carpeta por pantalla, con su vista y sus diálogos
-├── plugins/      vuetify.ts: tema único con los mismos colores que la interfaz React
+├── plugins/      vuetify.ts: tema con los mismos colores que React · vuetify.css: tipografía, botones y tablas
 ├── router/       index.ts: tabla de rutas
 └── main.ts · App.vue
 ```
@@ -84,7 +91,7 @@ la misma forma. Si se cambia algo en una de esas carpetas, hay que cambiarlo tam
 |---|---|
 | `pages/` | `views/` |
 | `hooks/` | `composables/` |
-| `theme.ts` (MUI) | `plugins/vuetify.ts` (Vuetify) |
+| `theme.ts` (MUI) | `plugins/vuetify.ts` y `plugins/vuetify.css` (Vuetify) |
 | `routes.tsx` | `router/index.ts` |
 
 ## Si algo falla
