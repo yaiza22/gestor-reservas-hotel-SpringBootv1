@@ -1,6 +1,7 @@
 package com.gestor_reservas_hotel.gestor_reservas_hotel.config;
 
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.Cliente;
+import com.gestor_reservas_hotel.gestor_reservas_hotel.model.Reserva;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.Usuario;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.repository.GeneradorIds;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertCallback;
 
 /**
- * Pone el id numérico a los clientes y usuarios nuevos justo antes de guardarlos en MongoDB.
+ * Pone el id numérico a los clientes, usuarios y reservas nuevos justo antes de guardarlos en MongoDB.
  */
 @Configuration
 public class AsignacionIdsConfig {
@@ -33,6 +34,16 @@ public class AsignacionIdsConfig {
                 usuario.setId(generador.siguiente("usuarios"));
             }
             return usuario;
+        };
+    }
+
+    @Bean
+    BeforeConvertCallback<Reserva> asignarIdReserva(@Lazy GeneradorIds generador) {
+        return (reserva, coleccion) -> {
+            if (reserva.getId() == null) {
+                reserva.setId(generador.siguiente("reservas"));
+            }
+            return reserva;
         };
     }
 }

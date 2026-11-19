@@ -11,7 +11,7 @@ import com.gestor_reservas_hotel.gestor_reservas_hotel.repository.ReservaReposit
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Sort;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalTime;
@@ -33,7 +33,7 @@ public class ReservaService {
 
     // Listar reservas,
     public List<Reserva> listar(EstadoReserva estado, Long clienteId) {
-        return repository.findAll().stream()
+        return repository.findAll(Sort.by("id")).stream()
                 .filter(r -> estado == null || r.getEstado() == estado)
                 .filter(r -> clienteId == null || r.getClienteId().equals(clienteId))
                 .toList();
