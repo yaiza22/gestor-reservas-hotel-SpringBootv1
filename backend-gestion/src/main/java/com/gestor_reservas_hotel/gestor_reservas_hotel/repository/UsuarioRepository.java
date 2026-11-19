@@ -2,23 +2,13 @@ package com.gestor_reservas_hotel.gestor_reservas_hotel.repository;
 
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.Usuario;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.TipoDocIdentidad;
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
- * Acceso a los datos de los usuarios (con nombres de métodos al estilo Spring Data).
+ * Acceso a la colección "usuarios"; Spring Data genera la implementación.
  */
-public interface UsuarioRepository {
+public interface UsuarioRepository extends MongoRepository<Usuario, Long> {
 
-    Usuario save(Usuario usuario);
-
-    Optional<Usuario> findById(Long id);
-
-    List<Usuario> findAll();
-
-    boolean existsById(Long id);
-
+    /** Para indicar si ya existe un usuario con ese tipo y número de documento. */
     boolean existsByTipoDocIdentidadAndNumDocIdentidad(TipoDocIdentidad tipoDocIdentidad, String numDocIdentidad);
-
-    void deleteById(Long id);
 }
