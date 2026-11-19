@@ -3,12 +3,19 @@ import type {
   Habitacion,
   HabitacionRequest,
   HabitacionUpdateRequest,
+  TipoHabitacion,
 } from '../types/habitacion'
 import { habitacionesApi } from './httpClient'
 
-/** Trae todas las habitaciones (GET /habitaciones). */
-export async function listarHabitaciones(): Promise<Habitacion[]> {
-  const { data } = await habitacionesApi.get<Habitacion[]>('/habitaciones')
+/** Filtros opcionales de la lista (API.md §3). Si un filtro no viene, no se envía. */
+export interface FiltrosHabitaciones {
+  estado?: EstadoHabitacion
+  tipoHabitacion?: TipoHabitacion
+}
+
+/** Trae las habitaciones; con filtros, solo las que cumplen todos (GET /habitaciones?estado=&tipoHabitacion=). */
+export async function listarHabitaciones(filtros: FiltrosHabitaciones = {}): Promise<Habitacion[]> {
+  const { data } = await habitacionesApi.get<Habitacion[]>('/habitaciones', { params: filtros })
   return data
 }
 
