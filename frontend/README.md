@@ -48,12 +48,19 @@ Si se cambia el `.env`, hay que detener y volver a ejecutar `npm run dev`.
 
 | Ruta | Pantalla | Backend que usa |
 |---|---|---|
-| `/reservas` | Lista con filtro por estado; crear, editar, ver detalle, confirmar, check-in, check-out, cancelar y eliminar | Gestión (`:8080`) |
-| `/habitaciones` | Lista con filtro por estado; crear, editar, eliminar y cambiar el estado desde el chip | Habitaciones (`:8081`) |
-| `/clientes` | Lista; crear, editar y eliminar | Gestión (`:8080`) |
+| `/reservas` | Lista con filtros por estado y por cliente; crear, editar, ver detalle, confirmar, check-in, check-out, cancelar y eliminar | Gestión (`:8080`) |
+| `/habitaciones` | Lista con filtros por estado y por tipo; crear, editar, eliminar y cambiar el estado desde el chip | Habitaciones (`:8081`) |
+| `/clientes` | Lista; crear, editar y eliminar. El país de residencia se elige de una lista y rellena la nacionalidad | Gestión (`:8080`) |
 | `/usuarios` | Lista; crear, editar y eliminar | Gestión (`:8080`) |
 
 La raíz `/` y cualquier ruta desconocida llevan a `/reservas`.
+
+**Filtros.** Los aplica el servidor con los parámetros de la API: `GET /api/habitaciones?estado=&tipoHabitacion=` y
+`GET /api/reservas?estado=&clienteId=`. Se puede usar uno solo o los dos a la vez; un filtro en «Todos» no se envía.
+
+**Países.** Al escribir en «País de residencia» se sugieren los países que empiezan por esas letras (sin importar tildes
+ni mayúsculas) y, al elegir uno, la nacionalidad se rellena sola (Colombia → Colombiana). Los dos campos siguen siendo
+editables. La lista es fija y está en `src/utils/paises.ts`.
 
 ## Estructura
 
@@ -65,7 +72,7 @@ src/
 ├── layouts/     MainLayout: barra superior con el menú de las 4 secciones
 ├── pages/       una carpeta por pantalla, con su página y sus diálogos
 ├── types/       tipos de TypeScript de cada entidad
-├── utils/       constantes, formatos (pesos y dd/MM/yyyy) y validaciones de formularios
+├── utils/       constantes, formatos (pesos y dd/MM/yyyy), validaciones de formularios y lista de países
 ├── theme.ts     colores y estilos globales de MUI
 ├── routes.tsx   tabla de rutas
 └── main.tsx · App.tsx
