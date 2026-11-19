@@ -7,6 +7,7 @@ import type { Cliente } from '@/types/cliente'
 import type { ApiError } from '@/types/common'
 import { TIPOS_DOCUMENTO } from '@/utils/constantes'
 import { comoApiError, erroresPorCampo, mensajeDeError } from '@/utils/errores'
+import { NOMBRES_PAISES, empiezaPor, nacionalidadDePais } from '@/utils/paises'
 import { validarCliente } from '@/utils/validaciones'
 import type { ClienteForm, ErroresForm } from '@/utils/validaciones'
 
@@ -35,6 +36,18 @@ const valores = reactive<ClienteForm>({
   nacionalidad: props.cliente?.nacionalidad ?? '',
   paisResidencia: props.cliente?.paisResidencia ?? '',
 })
+/** Guarda el país escrito o elegido y, si es un país de la lista, rellena la nacionalidad (se puede editar después). */
+function cambiarPais(pais: string | null | undefined) {
+  valores.paisResidencia = pais ?? ''
+  const nacionalidad = nacionalidadDePais(valores.paisResidencia)
+  if (nacionalidad) valores.nacionalidad = nacionalidad
+}
+
+/** Sugiere solo los países que empiezan por lo escrito (sin importar tildes ni mayúsculas). */
+function filtrarPais(nombre: string, busqueda: string): boolean {
+  return empiezaPor(nombre, busqueda)
+}
+
 const errores = ref<ErroresForm>({})
 const errorGeneral = ref<ApiError | null>(null)
 const guardando = ref(false)
@@ -113,10 +126,13 @@ async function guardar() {
             />
             <PasswordField v-if="!esEdicion" v-model="valores.password" :error="errores.password" />
             <v-text-field v-model="valores.nacionalidad" label="Nacionalidad *" :error-messages="errores.nacionalidad" />
-            <v-text-field
-              v-model="valores.paisResidencia"
+            <v-combobox
+              :model-value="valores.paisResidencia"
               label="País de residencia *"
+              :items="NOMBRES_PAISES"
+              :custom-filter="filtrarPais"
               :error-messages="errores.paisResidencia"
+              @update:model-value="cambiarPais"
             />
           </div>
         </v-card-text>

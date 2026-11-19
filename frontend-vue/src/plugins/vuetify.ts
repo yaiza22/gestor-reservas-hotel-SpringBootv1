@@ -30,5 +30,6 @@ export const vuetify = createVuetify({
     VBtn: { variant: 'flat' },
     VTextField: { variant: 'outlined', density: 'comfortable' },
     VSelect: { variant: 'outlined', density: 'comfortable' },
+    VCombobox: { variant: 'outlined', density: 'comfortable' },
   },
 })
