@@ -3,15 +3,19 @@ import type { EstadoHabitacion, TipoHabitacion } from '../types/habitacion'
 import type { EstadoReserva, Temporada } from '../types/reserva'
 import type { Rol } from '../types/usuario'
 
-/** Texto del menú superior y su ruta (ARQUITECTURA.md §3.3). */
-export const SECCIONES = [
+/** Menú de la interfaz de gestión (React): reservas, clientes y usuarios. Las habitaciones tienen su propia interfaz. */
+export const SECCIONES_GESTION = [
   { ruta: '/reservas', etiqueta: 'Reservas' },
-  { ruta: '/habitaciones', etiqueta: 'Habitaciones' },
   { ruta: '/clientes', etiqueta: 'Clientes' },
   { ruta: '/usuarios', etiqueta: 'Usuarios' },
 ] as const
 
+/** Menú de la interfaz de habitaciones (Vue): solo la pantalla del microservicio de habitaciones. */
+export const SECCIONES_HABITACIONES = [{ ruta: '/habitaciones', etiqueta: 'Habitaciones' }] as const
+
+/** Nombre que aparece en la barra superior de cada interfaz. */
 export const NOMBRE_APP = 'Gestor de Reservas de Hotel'
+export const NOMBRE_APP_HABITACIONES = 'Gestión de Habitaciones de Hotel'
 
 /** Mensaje genérico para errores 500 (CONVENCIONES.md §6.4): sin detalles técnicos. */
 export const MENSAJE_ERROR_INESPERADO = 'Ocurrió un error inesperado.'
