@@ -142,6 +142,12 @@ export function ReservaFormDialog({ reserva, clientes, habitaciones, onCerrar, o
                 select: {
                   multiple: true,
                   renderValue: (elegidas) => (elegidas as number[]).map(numeroDe).join(', '),
+                  // La lista se abre debajo del campo, con altura máxima y scroll, en vez de cubrir toda la ventana
+                  MenuProps: {
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                    transformOrigin: { vertical: 'top', horizontal: 'left' },
+                    slotProps: { paper: { sx: { maxHeight: 310 } } },
+                  },
                 },
               }}
               required
