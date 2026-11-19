@@ -4,6 +4,8 @@ import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.EstadoReserva
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.Temporada;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,11 +14,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
- * Reserva de habitaciones para clientes (un cliente a 1 o muchas habitaciones).
+ * Reserva de habitaciones para clientes (un cliente a 1 o muchas habitaciones); cada una es un documento de la colección "reservas".
  */
+@Document("reservas")
 @Getter
 @Setter
 public class Reserva {
+    @Id
     private Long id;
     private Long clienteId;
     private List<Long> habitacionesId;
