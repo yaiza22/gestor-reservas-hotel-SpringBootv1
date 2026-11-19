@@ -90,6 +90,7 @@ async function confirmarEliminar() {
             <v-btn
               icon="mdi-pencil"
               variant="text"
+              class="text-medium-emphasis"
               size="small"
               :aria-label="`Editar usuario ${usuario.nombre}`"
               @click="abrirEdicion(usuario)"

@@ -128,8 +128,8 @@ async function guardar() {
         </v-card-text>
         <v-card-actions class="px-6 pb-4">
           <v-spacer />
-          <v-btn :disabled="guardando" @click="emit('cerrar')">Cancelar</v-btn>
-          <v-btn type="submit" color="primary" :loading="guardando" :disabled="guardando">Guardar</v-btn>
+          <v-btn color="primary" :disabled="guardando" @click="emit('cerrar')">Cancelar</v-btn>
+          <v-btn type="submit" color="primary" variant="flat" :loading="guardando" :disabled="guardando">Guardar</v-btn>
         </v-card-actions>
       </v-form>
     </v-card>
