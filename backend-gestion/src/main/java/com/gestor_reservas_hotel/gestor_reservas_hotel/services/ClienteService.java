@@ -9,6 +9,7 @@ import com.gestor_reservas_hotel.gestor_reservas_hotel.repository.ClienteReposit
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,7 +58,7 @@ public class ClienteService {
      * @return la lista de clientes (vacía si no hay ninguno)
      */
     public List<Cliente> listar() {
-        return repository.findAll();
+        return repository.findAll(Sort.by("id"));
     }
 
     /**

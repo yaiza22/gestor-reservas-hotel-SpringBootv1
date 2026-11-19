@@ -3,6 +3,7 @@ package com.gestor_reservas_hotel.gestor_reservas_hotel.model;
 import com.gestor_reservas_hotel.gestor_reservas_hotel.model.enums.TipoDocIdentidad;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 
 /**
  * Datos comunes de cualquier persona del sistema; de ella heredan {@code Cliente} y {@code Usuario}.
@@ -11,6 +12,7 @@ import lombok.Setter;
 @Setter
 public abstract class Persona {
 
+    @Id
     private Long id;
     private TipoDocIdentidad tipoDocIdentidad;
     private String numDocIdentidad;
