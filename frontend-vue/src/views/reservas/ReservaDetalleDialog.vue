@@ -48,7 +48,7 @@ const datos = computed(() => [
       </v-card-text>
       <v-card-actions class="px-6 pb-4">
         <v-spacer />
-        <v-btn @click="emit('cerrar')">Cerrar</v-btn>
+        <v-btn color="primary" @click="emit('cerrar')">Cerrar</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

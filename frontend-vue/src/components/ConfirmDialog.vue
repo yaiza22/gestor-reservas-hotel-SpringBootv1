@@ -29,8 +29,8 @@ const emit = defineEmits<{
       <v-card-text class="px-6">{{ mensaje }}</v-card-text>
       <v-card-actions class="px-6 pb-4">
         <v-spacer />
-        <v-btn :disabled="procesando" @click="emit('cancelar')">Cancelar</v-btn>
-        <v-btn color="error" :disabled="procesando" @click="emit('confirmar')">
+        <v-btn color="primary" :disabled="procesando" @click="emit('cancelar')">Cancelar</v-btn>
+        <v-btn color="error" variant="flat" :disabled="procesando" @click="emit('confirmar')">
           {{ textoConfirmar }}
         </v-btn>
       </v-card-actions>

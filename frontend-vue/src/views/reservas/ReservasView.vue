@@ -200,6 +200,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
             <v-btn
               icon="mdi-eye"
               variant="text"
+              class="text-medium-emphasis"
               size="small"
               :aria-label="`Ver detalle de la reserva ${reserva.id}`"
               @click="verDetalle = reserva"
@@ -211,6 +212,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
               v-if="sePuedeEditar(reserva)"
               icon="mdi-pencil"
               variant="text"
+              class="text-medium-emphasis"
               size="small"
               :disabled="enProceso === reserva.id"
               :aria-label="`Editar reserva ${reserva.id}`"
@@ -224,6 +226,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
               :key="transicion.texto"
               size="small"
               variant="outlined"
+              color="primary"
               class="mr-2"
               :disabled="enProceso === reserva.id"
               :aria-label="`${transicion.texto} reserva ${reserva.id}`"

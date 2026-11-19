@@ -1,0 +1,13 @@
+/*
+ * Ajustes globales que no se pueden poner en createVuetify. Igualan la interfaz Vue con la React (MUI):
+ * la misma tipografía que theme.ts y los botones en mayúsculas, como los Button de MUI.
+ * Estas reglas no están dentro de @layer, así que tienen prioridad sobre los estilos de Vuetify.
+ */
+:root {
+  --v-font-body: "Roboto", "Segoe UI", system-ui, sans-serif;
+}
+
+.v-btn {
+  text-transform: uppercase;
+  letter-spacing: 0.02857em;
+}
