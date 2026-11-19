@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { cambiarEstadoHabitacion, eliminarHabitacion, listarHabitaciones } from '@/api/habitaciones.api'
 import AlertaError from '@/components/AlertaError.vue'
 import CargandoTabla from '@/components/CargandoTabla.vue'
@@ -10,16 +10,22 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useLista } from '@/composables/useLista'
 import { useNotify } from '@/composables/useNotify'
 import type { ApiError } from '@/types/common'
-import type { EstadoHabitacion, Habitacion } from '@/types/habitacion'
-import { ESTADOS_HABITACION } from '@/utils/constantes'
+import type { EstadoHabitacion, Habitacion, TipoHabitacion } from '@/types/habitacion'
+import { ESTADOS_HABITACION, TIPOS_HABITACION } from '@/utils/constantes'
 import { comoApiError } from '@/utils/errores'
 import { etiquetaTipoHabitacion, formatearMoneda } from '@/utils/formato'
 import HabitacionFormDialog from './HabitacionFormDialog.vue'
 
-/** Pantalla de habitaciones: tabla, filtro por estado, cambio rápido de estado, crear, editar y eliminar. */
+/** Pantalla de habitaciones: tabla, filtros por estado y tipo, cambio rápido de estado, crear, editar y eliminar. */
 const notify = useNotify()
-const { datos: habitaciones, cargando, error, recargar } = useLista(listarHabitaciones)
 const filtroEstado = ref<EstadoHabitacion | ''>('')
+const filtroTipo = ref<TipoHabitacion | ''>('')
+// Los filtros los aplica el servidor; '' significa «sin filtro» y ese parámetro no se envía
+const { datos: habitaciones, cargando, error, recargar } = useLista(() =>
+  listarHabitaciones({ estado: filtroEstado.value || undefined, tipoHabitacion: filtroTipo.value || undefined }),
+)
+watch([filtroEstado, filtroTipo], () => recargar())
+const hayFiltros = computed(() => filtroEstado.value !== '' || filtroTipo.value !== '')
 const formAbierto = ref(false)
 const editando = ref<Habitacion | null>(null)
 const porEliminar = ref<Habitacion | null>(null)
@@ -33,9 +39,10 @@ const opcionesFiltro: { title: string; value: EstadoHabitacion | '' }[] = [
   ...ESTADOS_HABITACION.map((estado) => ({ title: estado, value: estado })),
 ]
 
-const visibles = computed(() =>
-  filtroEstado.value === '' ? habitaciones.value : habitaciones.value.filter((h) => h.estado === filtroEstado.value),
-)
+const opcionesTipo: { title: string; value: TipoHabitacion | '' }[] = [
+  { title: 'Todos', value: '' },
+  ...TIPOS_HABITACION.map((tipo) => ({ title: tipo.etiqueta, value: tipo.valor })),
+]
 const errorVisible = computed(() => errorAccion.value ?? error.value)
 
 function abrirNueva() {
@@ -96,7 +103,7 @@ async function confirmarEliminar() {
     </template>
   </PageHeader>
 
-  <div class="mb-4">
+  <div class="mb-4 d-flex flex-wrap ga-4">
     <v-select
       v-model="filtroEstado"
       label="Filtrar por estado"
@@ -116,6 +123,14 @@ async function confirmarEliminar() {
         <span v-else>Todos</span>
       </template>
     </v-select>
+    <v-select
+      v-model="filtroTipo"
+      label="Filtrar por tipo"
+      :items="opcionesTipo"
+      density="compact"
+      hide-details
+      style="max-width: 224px"
+    />
   </div>
 
   <AlertaError v-if="errorVisible" :error="errorVisible" servicio="habitaciones" />
@@ -135,7 +150,7 @@ async function confirmarEliminar() {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="habitacion in visibles" :key="habitacion.id">
+        <tr v-for="habitacion in habitaciones" :key="habitacion.id">
           <td>{{ habitacion.id }}</td>
           <td>{{ habitacion.numero }}</td>
           <td>{{ etiquetaTipoHabitacion(habitacion.tipoHabitacion) }}</td>
@@ -178,7 +193,7 @@ async function confirmarEliminar() {
     </v-table>
     <CargandoTabla v-if="cargando" etiqueta="Cargando habitaciones" />
     <EmptyState
-      v-if="!cargando && !error && habitaciones.length === 0"
+      v-if="!cargando && !error && habitaciones.length === 0 && !hayFiltros"
       mensaje="Todavía no hay habitaciones registradas."
     >
       <template #accion>
@@ -186,8 +201,8 @@ async function confirmarEliminar() {
       </template>
     </EmptyState>
     <EmptyState
-      v-if="!cargando && !error && habitaciones.length > 0 && visibles.length === 0"
-      mensaje="No hay habitaciones con ese estado."
+      v-if="!cargando && !error && habitaciones.length === 0 && hayFiltros"
+      mensaje="No hay habitaciones con esos filtros."
     />
   </v-card>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { listarClientes } from '@/api/clientes.api'
 import { listarHabitaciones } from '@/api/habitaciones.api'
 import {
@@ -40,12 +40,21 @@ const TRANSICIONES: Transicion[] = [
   { texto: 'Check-out', desde: ['ENCURSO'], ejecutar: registrarCheckOut, exito: 'Check-out registrado' },
 ]
 
-/** Pantalla de reservas: tabla, filtro por estado, crear, editar, cambiar de estado y eliminar. */
+/** Pantalla de reservas: tabla, filtros por estado y cliente, crear, editar, cambiar de estado y eliminar. */
 const notify = useNotify()
-const { datos: reservas, cargando, error, recargar } = useLista(listarReservas)
+const filtroEstado = ref<EstadoReserva | ''>('')
+const filtroCliente = ref<number | ''>('')
+// Los filtros los aplica el servidor; '' significa «sin filtro» y ese parámetro no se envía
+const { datos: reservas, cargando, error, recargar } = useLista(() =>
+  listarReservas({
+    estado: filtroEstado.value || undefined,
+    clienteId: filtroCliente.value === '' ? undefined : filtroCliente.value,
+  }),
+)
+watch([filtroEstado, filtroCliente], () => recargar())
+const hayFiltros = computed(() => filtroEstado.value !== '' || filtroCliente.value !== '')
 const { datos: clientes, cargando: cargandoClientes, error: errorClientes } = useLista(listarClientes)
 const { datos: habitaciones, cargando: cargandoHabitaciones, error: errorHabitaciones } = useLista(listarHabitaciones)
-const filtroEstado = ref<EstadoReserva | ''>('')
 const formAbierto = ref(false)
 const editando = ref<Reserva | null>(null)
 const verDetalle = ref<Reserva | null>(null)
@@ -60,9 +69,10 @@ const opcionesFiltro: { title: string; value: EstadoReserva | '' }[] = [
   ...ESTADOS_RESERVA.map((estado) => ({ title: estado, value: estado })),
 ]
 
-const visibles = computed(() =>
-  filtroEstado.value === '' ? reservas.value : reservas.value.filter((r) => r.estado === filtroEstado.value),
-)
+const opcionesCliente = computed<{ title: string; value: number | '' }[]>(() => [
+  { title: 'Todos', value: '' },
+  ...clientes.value.map((c) => ({ title: `${c.nombre} · ${c.tipoDocIdentidad} ${c.numDocIdentidad}`, value: c.id })),
+])
 
 /** Nombre del cliente. Si la lista no se pudo cargar no se sabe, así que se muestra el id en vez de decir «eliminado». */
 function nombreCliente(id: number): string {
@@ -149,7 +159,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
     </template>
   </PageHeader>
 
-  <div class="mb-4">
+  <div class="mb-4 d-flex flex-wrap ga-4">
     <v-select
       v-model="filtroEstado"
       label="Filtrar por estado"
@@ -169,6 +179,15 @@ function sePuedeEditar(reserva: Reserva): boolean {
         <span v-else>Todos</span>
       </template>
     </v-select>
+    <v-select
+      v-model="filtroCliente"
+      label="Filtrar por cliente"
+      :items="opcionesCliente"
+      :disabled="cargandoClientes || errorClientes !== null"
+      density="compact"
+      hide-details
+      style="max-width: 280px"
+    />
   </div>
 
   <AlertaError v-for="alerta in alertas" :key="alerta.mensaje" :error="alerta.error" :servicio="alerta.servicio" />
@@ -188,7 +207,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="reserva in visibles" :key="reserva.id">
+        <tr v-for="reserva in reservas" :key="reserva.id">
           <td>{{ reserva.id }}</td>
           <td>{{ nombreCliente(reserva.clienteId) }}</td>
           <td>{{ numerosHabitaciones(reserva.habitacionesId) }}</td>
@@ -263,7 +282,7 @@ function sePuedeEditar(reserva: Reserva): boolean {
       </tbody>
     </v-table>
     <CargandoTabla v-if="cargando" etiqueta="Cargando reservas" />
-    <EmptyState v-if="!cargando && !error && reservas.length === 0" mensaje="Todavía no hay reservas registradas.">
+    <EmptyState v-if="!cargando && !error && reservas.length === 0 && !hayFiltros" mensaje="Todavía no hay reservas registradas.">
       <template #accion>
         <v-btn color="primary" prepend-icon="mdi-plus" :disabled="cargandoClientes || cargandoHabitaciones" @click="abrirNueva">
           Nueva reserva
@@ -271,8 +290,8 @@ function sePuedeEditar(reserva: Reserva): boolean {
       </template>
     </EmptyState>
     <EmptyState
-      v-if="!cargando && !error && reservas.length > 0 && visibles.length === 0"
-      mensaje="No hay reservas con ese estado."
+      v-if="!cargando && !error && reservas.length === 0 && hayFiltros"
+      mensaje="No hay reservas con esos filtros."
     />
   </v-card>
 

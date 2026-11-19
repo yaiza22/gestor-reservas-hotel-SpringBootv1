@@ -1,9 +1,15 @@
-import type { Reserva, ReservaRequest } from '../types/reserva'
+import type { EstadoReserva, Reserva, ReservaRequest } from '../types/reserva'
 import { gestionApi } from './httpClient'
 
-/** Trae todas las reservas (GET /reservas). */
-export async function listarReservas(): Promise<Reserva[]> {
-  const { data } = await gestionApi.get<Reserva[]>('/reservas')
+/** Filtros opcionales de la lista (API.md §4.3). Si un filtro no viene, no se envía. */
+export interface FiltrosReservas {
+  estado?: EstadoReserva
+  clienteId?: number
+}
+
+/** Trae las reservas; con filtros, solo las que cumplen todos (GET /reservas?estado=&clienteId=). */
+export async function listarReservas(filtros: FiltrosReservas = {}): Promise<Reserva[]> {
+  const { data } = await gestionApi.get<Reserva[]>('/reservas', { params: filtros })
   return data
 }
 
