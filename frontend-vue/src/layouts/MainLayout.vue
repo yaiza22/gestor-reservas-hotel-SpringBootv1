@@ -18,7 +18,7 @@ import { NOMBRE_APP, SECCIONES } from '@/utils/constantes'
     </nav>
   </v-app-bar>
   <v-main>
-    <v-container class="py-8" style="max-width: 1200px">
+    <v-container class="px-6 py-8" style="max-width: 1200px">
       <router-view />
     </v-container>
   </v-main>

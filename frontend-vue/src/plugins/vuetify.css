@@ -11,3 +11,19 @@
   text-transform: uppercase;
   letter-spacing: 0.02857em;
 }
+
+/*
+ * Tablas: la misma altura de fila que las Table de MUI. MUI pone 16px de relleno en cada celda y deja que la fila
+ * crezca con su contenido; Vuetify fija la fila en 52px. También se agrandan los íconos de las acciones a 24px,
+ * el tamaño de los IconButton de MUI.
+ */
+.v-table > .v-table__wrapper > table > tbody > tr > td,
+.v-table > .v-table__wrapper > table > thead > tr > th {
+  height: auto;
+  padding: 16px;
+  line-height: 1.43;
+}
+
+.v-table .v-btn--icon .v-icon {
+  font-size: 24px;
+}
